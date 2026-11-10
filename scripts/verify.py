@@ -29,20 +29,23 @@ def check(cond, ok_msg, err_msg, warn=False):
         print(f"  ✗ {err_msg}")
 
 print("== 1. Archivos requeridos ==")
-required = ["index.html", "config.js", "assets/css/styles.css", "assets/js/app.js", "README.md"]
+required = ["index.html", "generar.html", "config.js", "assets/css/styles.css", "assets/js/app.js", "README.md"]
 for rel in required:
     check((ROOT / rel).is_file(), rel, f"Falta el archivo requerido: {rel}")
 
-print("== 2. Referencias locales en index.html existen ==")
+print("== 2. Referencias locales en index.html y generar.html existen ==")
+for page in ("index.html", "generar.html"):
+    html = (ROOT / page).read_text(encoding="utf-8") if (ROOT / page).exists() else ""
+    refs = re.findall(r'(?:src|href)="([^"#]+)"', html)
+    local_refs = [r for r in refs if not r.startswith(("http://", "https://", "data:", "mailto:", "tel:"))]
+    for r in local_refs:
+        if r.startswith("/"):
+            errors.append(f"Ruta absoluta '{r}' en {page} (rompe en GitHub Pages bajo /<repo>/).")
+            print(f"  ✗ [{page}] Ruta absoluta: {r}")
+            continue
+        check((ROOT / r).exists(), f"[{page}] {r}", f"{page} referencia un archivo inexistente: {r}")
+
 html = (ROOT / "index.html").read_text(encoding="utf-8") if (ROOT / "index.html").exists() else ""
-refs = re.findall(r'(?:src|href)="([^"#]+)"', html)
-local_refs = [r for r in refs if not r.startswith(("http://", "https://", "data:", "mailto:", "tel:"))]
-for r in local_refs:
-    if r.startswith("/"):
-        errors.append(f"Ruta absoluta '{r}' en index.html (rompe en GitHub Pages bajo /<repo>/).")
-        print(f"  ✗ Ruta absoluta: {r}")
-        continue
-    check((ROOT / r).exists(), r, f"index.html referencia un archivo inexistente: {r}")
 check(not re.search(r'(src|href)="/', html), "Sin rutas desde la raíz del dominio", "index.html contiene rutas absolutas '/...'")
 
 print("== 3. index.html no contiene el panel admin antiguo ni datos fijos de ejemplo ==")

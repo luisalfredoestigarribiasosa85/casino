@@ -450,6 +450,8 @@ body {
   border-top: 1px solid var(--line);
   width: 100%;
 }
+.foot__link { color: inherit; opacity: .75; text-decoration: underline; text-underline-offset: 2px; }
+.foot__link:hover { opacity: 1; color: var(--gold); }
 
 /* ---------- Animación de entrada ---------- */
 @keyframes rise {

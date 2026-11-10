@@ -2,8 +2,12 @@
    casino — Lógica de la landing
    ==========================================================================
    • Lee la config PÚBLICA desde window.SITE_CONFIG (config.js).
-   • ?ref=codigo  → usa campaigns[codigo]   (entrada NO confiable)
-   • ?phone=...   → usa ese número          (entrada NO confiable, validada)
+   • ?ref=codigo      → usa campaigns[codigo]   (entrada NO confiable)
+   • ?phone=...       → usa ese número          (entrada NO confiable, validada)
+   • ?msg=texto       → mensaje personalizado del chat (<= 300 caracteres)
+   • ?expires=ISO8601 → vencimiento absoluto con huso (habilita el contador)
+   • ?ref= se guarda para analítica en todos los casos ("ref", "phone", "default").
+   • Ejemplo completo: ?phone=595981234567&msg=Hola%20sorpresa&expires=2026-12-31T23:59:59-03:00
    • Si la config o los parámetros no son válidos, NO se genera ningún
      enlace de WhatsApp: se muestra un aviso en su lugar.
    • Sin datos personales en consola ni en analítica.
@@ -18,7 +22,21 @@
   var RE_URL   = /^https:\/\/[A-Za-z0-9.-]+(?::\d{2,5})?(?:\/[^\s]*)?$/;
   var MAX_MSG  = 300;
 
+  // ISO 8601 válido y CON huso horario (Z o ±hh:mm). Evita ambigüedad de zona.
+  function isValidExpires(input) {
+    if (typeof input !== "string") return false;
+    var s = input.trim();
+    if (!/([zZ]|[+-]\d{2}:?\d{2})$/.test(s)) return false;
+    var t = Date.parse(s);
+    return !isNaN(t);
+  }
+
   /* ========== Normalización de la config ========== */
+  function sanitizeMessage(input) {
+    if (typeof input !== "string") return "";
+    return input.replace(/[\u0000-\u001F\u007F]/g, " ").trim().slice(0, MAX_MSG);
+  }
+
   function normalizeConfig(raw) {
     var cfg = (raw && typeof raw === "object") ? raw : {};
     var out = {
@@ -27,7 +45,6 @@
       message:      "Hola, vengo de la campaña",
       expiresAt:    "",
       siteUrl:      "",
-      displayPhone: "",
       analytics:    { enabled: false }
     };
 
@@ -42,24 +59,14 @@
       if (RE_REF.test(code) && RE_PHONE.test(phone)) out.campaigns[code] = phone;
     }
 
-    if (typeof cfg.message === "string") {
-      var msg = cfg.message.replace(/[\u0000-\u001F\u007F]/g, " ").trim().slice(0, MAX_MSG);
-      if (msg) out.message = msg;
-    }
+    var msg = sanitizeMessage(cfg.message);
+    if (msg) out.message = msg;
 
-    if (typeof cfg.expiresAt === "string" && cfg.expiresAt.trim()) {
-      var raw_exp = cfg.expiresAt.trim();
-      var hasZone = /([zZ]|[+-]\d{2}:?\d{2})$/.test(raw_exp);
-      var t = Date.parse(raw_exp);
-      if (hasZone && !isNaN(t)) out.expiresAt = raw_exp;
-    }
+    if (isValidExpires(cfg.expiresAt)) out.expiresAt = String(cfg.expiresAt).trim();
 
     if (typeof cfg.siteUrl === "string" && RE_URL.test(cfg.siteUrl.trim())) {
       out.siteUrl = cfg.siteUrl.trim().replace(/\/+$/, "") + "/";
     }
-
-    var disp = String(cfg.displayPhone || "").replace(/\D/g, "");
-    out.displayPhone = RE_PHONE.test(disp) ? disp : out.defaultPhone;
 
     out.analytics.enabled = !!(cfg.analytics && cfg.analytics.enabled === true);
     return out;
@@ -67,29 +74,35 @@
 
   var config = normalizeConfig(window.SITE_CONFIG);
 
-  /* ========== Resolución del contacto (?ref / ?phone) ========== */
+  /* ========== Resolución del contacto (?ref / ?phone + overrides de campaña) ========== */
   function resolveCampaign() {
     var params = new URLSearchParams(window.location.search);
     var refRaw = (params.get("ref") || "").trim().toLowerCase();
+    var refValid = RE_REF.test(refRaw) ? refRaw : "";
     var phoneRaw = (params.get("phone") || "").replace(/\D/g, "");
+
+    // Overrides de campaña vía URL (opcionales, no confiables → saneados)
+    var message   = sanitizeMessage(params.get("msg")) || config.message;
+    var expiresRaw = params.get("expires");
+    var expiresAt = isValidExpires(expiresRaw) ? String(expiresRaw).trim() : config.expiresAt;
 
     // 1) phone directo válido
     if (RE_PHONE.test(phoneRaw)) {
-      return { ok: true, phone: phoneRaw, ref: "", source: "phone" };
+      return { ok: true, phone: phoneRaw, ref: refValid, source: "phone", message: message, expiresAt: expiresAt };
     }
     // 2) ref conocido
-    if (RE_REF.test(refRaw) && Object.prototype.hasOwnProperty.call(config.campaigns, refRaw)) {
-      return { ok: true, phone: config.campaigns[refRaw], ref: refRaw, source: "ref" };
+    if (refValid && Object.prototype.hasOwnProperty.call(config.campaigns, refValid)) {
+      return { ok: true, phone: config.campaigns[refValid], ref: refValid, source: "ref", message: message, expiresAt: expiresAt };
     }
     // 3) fallback al número por defecto
     if (config.defaultPhone) {
-      return { ok: true, phone: config.defaultPhone, ref: "", source: "default" };
+      return { ok: true, phone: config.defaultPhone, ref: refValid, source: "default", message: message, expiresAt: expiresAt };
     }
-    return { ok: false, phone: "", ref: "", source: "unconfigured" };
+    return { ok: false, phone: "", ref: refValid, source: "unconfigured", message: message, expiresAt: expiresAt };
   }
 
-  function waUrl(phone) {
-    return "https://wa.me/" + phone + "?text=" + encodeURIComponent(config.message);
+  function waUrl(phone, message) {
+    return "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
   }
 
   var $ = function (id) { return document.getElementById(id); };
@@ -114,7 +127,7 @@
 
     // Enlace de WhatsApp válido
     if (cta) {
-      cta.href = waUrl(state.phone);
+      cta.href = waUrl(state.phone, state.message);
       cta.dataset.campaignSource = state.source;
       cta.dataset.campaignRef = state.ref;
     }
@@ -152,9 +165,9 @@
     var root = $("countdown");
     if (!root) return;
 
-    if (!config.expiresAt) { root.hidden = true; return; } // sin vencimiento → sin urgencia falsa
+    if (!state.expiresAt) { root.hidden = true; return; } // sin vencimiento → sin urgencia falsa
 
-    var endTs = Date.parse(config.expiresAt);
+    var endTs = Date.parse(state.expiresAt);
     var cells = $("countdown-cells");
     var expiredMsg = $("countdown-expired");
     var label = $("countdown-label");
@@ -164,7 +177,7 @@
     if (isNaN(endTs)) { root.hidden = true; return; }
 
     root.hidden = false;
-    if (deadlineEl) deadlineEl.textContent = "La oferta finaliza el " + deadlineText(config.expiresAt);
+    if (deadlineEl) deadlineEl.textContent = "La oferta finaliza el " + deadlineText(state.expiresAt);
 
     function renderExpired() {
       if (cells) cells.hidden = true;
@@ -205,8 +218,7 @@
     var toast = $("toast");
     if (!btn) return;
     btn.addEventListener("click", function () {
-      var digits = config.displayPhone || state.phone;
-      var text = "+" + digits;
+      var text = "+" + state.phone;
       var done = function () {
         if (toast) {
           toast.textContent = "Número copiado ✓";

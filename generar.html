@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#0b0b0b" />
+<title>Generador de campañas · casino</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔗</text></svg>" />
+<link rel="stylesheet" href="assets/css/styles.css" />
+<style>
+  body { display: block; }
+  .gen { max-width: 46rem; margin: 0 auto; padding: max(1.2rem, env(safe-area-inset-top)) 1.25rem 3rem; text-align: left; }
+  .gen h1 { font-family: var(--font-display); font-weight: 900; font-size: clamp(1.8rem, 6vw, 2.6rem); letter-spacing: -.02em; margin-bottom: .35rem; }
+  .gen__lead { color: var(--text-dim); font-size: .9rem; margin-bottom: 1.1rem; }
+  .warn { border: 1px solid rgba(242,198,109,.4); background: var(--gold-soft); color: var(--gold); border-radius: .6rem; padding: .7rem .85rem; font-size: .78rem; line-height: 1.55; margin-bottom: 1.4rem; }
+  .card { background: var(--bg-soft); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 1.2rem; display: grid; gap: .8rem; }
+  .card input { width: 100%; background: #161613; border: 1px solid var(--line); border-radius: .55rem; color: var(--text); padding: .6rem .7rem; font-size: .9rem; font-family: inherit; }
+  .card input:focus { outline: none; border-color: var(--wa); box-shadow: 0 0 0 3px rgba(37,211,102,.18); }
+  .hint { font-size: .7rem; color: var(--text-faint); line-height: 1.5; }
+  .row { display: grid; gap: .35rem; }
+  .field-err { font-size: .7rem; color: var(--error); min-height: 1em; }
+  .preview { background: #101010; border: 1px solid var(--line); border-radius: .6rem; padding: .7rem .8rem; font-family: ui-monospace, Menlo, monospace; font-size: .72rem; color: var(--gold); word-break: break-all; line-height: 1.5; }
+  .preview--empty { color: var(--text-faint); }
+  .actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .btn-primary { background: linear-gradient(180deg, #2ee673, var(--wa) 55%, var(--wa-deep)); color: var(--wa-dark); border: none; }
+  .btn-primary[disabled] { opacity: .4; cursor: not-allowed; }
+  .divider { display: flex; align-items: center; gap: .75rem; margin: 1.6rem 0 1rem; color: var(--text-faint); font-size: .65rem; letter-spacing: .2em; text-transform: uppercase; }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .chip { display: inline-flex; align-items: center; gap: .45rem; border: 1px solid var(--line); border-radius: 999px; padding: .35rem .75rem; font-size: .72rem; color: var(--text-dim); margin: .2rem .3rem .2rem 0; cursor: pointer; background: rgba(255,255,255,.02); }
+  .chip:hover { border-color: var(--gold-deep); color: var(--gold); }
+  .back { display: inline-block; margin-top: 1.5rem; font-size: .78rem; color: var(--text-dim); }
+  .back:hover { color: var(--text); }
+  .toast { bottom: 1.2rem; }
+</style>
+</head>
+
+<body>
+<div class="bg-fx" aria-hidden="true"></div>
+
+<main class="gen">
+  <h1>Generador de campañas</h1>
+  <p class="gen__lead">Armá el enlace de WhatsApp para cada anuncio <strong>sin tocar el código</strong>. El enlace mismo lleva el número, el mensaje y el vencimiento.</p>
+
+  <div class="warn" role="note">
+    Esta página es pública. El número de WhatsApp de la campaña será visible en la URL (igual que en <code>config.js</code>): no uses datos privados. Cada enlace generado funciona solo en tu hosting/GitHub Pages publicado.
+  </div>
+
+  <form class="card" id="gen-form" novalidate>
+    <div class="row">
+      <label class="field__label" for="g-phone">Número de WhatsApp *</label>
+      <input id="g-phone" inputmode="numeric" placeholder="595981234567" autocomplete="off" required aria-describedby="err-phone" />
+      <p class="field-err" id="err-phone" role="alert"></p>
+    </div>
+
+    <div class="row">
+      <label class="field__label" for="g-msg">Mensaje pre-cargado</label>
+      <input id="g-msg" type="text" maxlength="300" autocomplete="off" placeholder="Hola, vengo de la campaña" />
+      <p class="hint">Se abre el chat con este texto listo para enviar. Mín. 4 caracteres si lo dejás vacío se usa el de <code>config.js</code>.</p>
+    </div>
+
+    <div class="row">
+      <label class="field__label" for="g-expires">Vencimiento (opcional)</label>
+      <input id="g-expires" type="datetime-local" />
+      <p class="hint">Activa el contador de la landing hasta esa fecha/hora (hora de este dispositivo: UTC<span id="tz-offset"></span>). Dejalo vacío si la oferta no vence en un día fijo.</p>
+    </div>
+
+    <div class="row">
+      <label class="field__label" for="g-ref">Etiqueta de campaña (opcional, solo para tus métricas)</label>
+      <input id="g-ref" type="text" placeholder="ej. instagram-nov2026" autocomplete="off" />
+      <p class="hint">Letras minúsculas, números, guiones. Aparece en los eventos de analítica como <code>ref</code>. No cambia el número.</p>
+    </div>
+
+    <p class="field__label">Enlace generado</p>
+    <div class="preview preview--empty" id="preview">Completá el número para generar el enlace…</div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary" id="copy-link" disabled>📋 Copiar enlace</button>
+      <button type="button" class="btn" id="test-link" disabled>Probar en WhatsApp ↗</button>
+    </div>
+  </form>
+
+  <div class="divider">Campañas ya configuradas en config.js</div>
+  <div id="configured-campaigns" aria-live="polite">
+    <p class="hint">Cargando…</p>
+  </div>
+
+  <a class="back" href="index.html">← Volver a la página principal</a>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="config.js"></script>
+<script>
+"use strict";
+(function () {
+  var RE_PHONE = /^\d{8,15}$/;
+  var RE_REF   = /^[a-z0-9][a-z0-9][a-z0-9_-]{0,27}$/;
+  var MAX_MSG  = 300;
+
+  var phoneEl   = document.getElementById("g-phone");
+  var msgEl     = document.getElementById("g-msg");
+  var expiresEl = document.getElementById("g-expires");
+  var refEl     = document.getElementById("g-ref");
+  var errPhone  = document.getElementById("err-phone");
+  var preview   = document.getElementById("preview");
+  var copyBtn   = document.getElementById("copy-link");
+  var testBtn   = document.getElementById("test-link");
+  var toast     = document.getElementById("toast");
+  var config    = (window.SITE_CONFIG && typeof window.SITE_CONFIG === "object") ? window.SITE_CONFIG : {};
+
+  // Mostrar offset del dispositivo (para entender qué hora usa el vencimiento)
+  var offMin = -new Date().getTimezoneOffset();
+  var sign = offMin >= 0 ? "+" : "-";
+  var abs = Math.abs(offMin);
+  document.getElementById("tz-offset").textContent =
+    sign + String(Math.floor(abs / 60)).padStart(2, "0") + ":" + String(abs % 60).padStart(2, "0");
+
+  if (typeof config.message === "string" && config.message) msgEl.placeholder = config.message;
+
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  // "2026-12-31T23:59" (hora local) → "2026-12-31T23:59:00-03:00"
+  function localToIsoWithOffset(value) {
+    var d = new Date(value);
+    if (isNaN(d.getTime())) return "";
+    var off = -d.getTimezoneOffset();
+    var s = off >= 0 ? "+" : "-";
+    var a = Math.abs(off);
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) +
+           "T" + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":00" +
+           s + pad(Math.floor(a / 60)) + ":" + pad(a % 60);
+  }
+
+  function cleanPhone(v) { return String(v || "").replace(/\D/g, ""); }
+  function baseUrl() { return window.location.href.replace(/[^/]*$/, "index.html").split("?")[0]; }
+
+  function build() {
+    var phone = cleanPhone(phoneEl.value);
+    var ok = RE_PHONE.test(phone);
+    errPhone.textContent = ok || !phoneEl.value.trim() ? "" : "El número debe tener entre 8 y 15 dígitos (incluí el código de país).";
+    phoneEl.setAttribute("aria-invalid", String(!ok && !!phoneEl.value.trim()));
+
+    var params = ["phone=" + phone];
+    var msg = msgEl.value.replace(/[\u0000-\u001F\u007F]/g, " ").trim().slice(0, MAX_MSG);
+    if (msg) params.push("msg=" + encodeURIComponent(msg));
+    var expiresIso = expiresEl.value ? localToIsoWithOffset(expiresEl.value) : "";
+    if (expiresIso) params.push("expires=" + encodeURIComponent(expiresIso));
+    var ref = refEl.value.trim().toLowerCase();
+    if (ref && RE_REF.test(ref)) params.push("ref=" + encodeURIComponent(ref));
+
+    var url = ok ? baseUrl() + "?" + params.join("&") : "";
+    preview.textContent = url || "Completá el número para generar el enlace…";
+    preview.classList.toggle("preview--empty", !url);
+    copyBtn.disabled = !url;
+    testBtn.disabled = !url;
+    return url;
+  }
+
+  [phoneEl, msgEl, expiresEl, refEl].forEach(function (el) {
+    el.addEventListener("input", build);
+    el.addEventListener("change", build);
+  });
+
+  function copyText(text) {
+    var done = function () {
+      toast.textContent = "Enlace copiado ✓";
+      toast.classList.add("toast--show");
+      setTimeout(function () { toast.classList.remove("toast--show"); }, 2400);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, done);
+    } else {
+      var ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e) { /* noop */ }
+      document.body.removeChild(ta); done();
+    }
+  }
+
+  copyBtn.addEventListener("click", function () { var url = build(); if (url) copyText(url); });
+  testBtn.addEventListener("click", function () { var url = build(); if (url) window.open(url, "_blank", "noopener"); });
+
+  // Campañas configuradas en config.js → enlaces rápidos ?ref=codigo
+  (function renderConfigured() {
+    var box = document.getElementById("configured-campaigns");
+    var camps = (config.campaigns && typeof config.campaigns === "object") ? config.campaigns : {};
+    var keys = Object.keys(camps);
+    if (!keys.length) {
+      box.innerHTML = '<p class="hint">No hay campañas cargadas en <code>config.js</code>. Editá el archivo localmente (o usá <code>dev/config-editor.html</code>) y hacé commit + push para publicarlas.</p>';
+      return;
+    }
+    box.innerHTML = "";
+    keys.forEach(function (k) {
+      var phone = String(camps[k] || "").replace(/\D/g, "");
+      if (!RE_PHONE.test(phone) || !RE_REF.test(k)) return;
+      var url = baseUrl() + "?ref=" + encodeURIComponent(k);
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip";
+      chip.textContent = "?ref=" + k + " — copiar enlace";
+      chip.addEventListener("click", function () { copyText(url); });
+      box.appendChild(chip);
+    });
+  })();
+
+  build();
+})();
+</script>
+</body>
+</html>

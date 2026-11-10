@@ -8,13 +8,30 @@ Funciona en GitHub Pages tal cual está.
 
 ```
 index.html                 Página principal (marcado semántico)
-config.js                  ⚙️  Configuración pública — EDITAR ACÁ
+generar.html               🔗 Generador de enlaces de campaña (autoadministración, ver abajo)
+config.js                  ⚙️  Configuración pública — campañas fijas
 assets/css/styles.css      Estilos
 assets/js/app.js           Lógica (validación, contador, tracking opcional)
 dev/config-editor.html     Herramienta LOCAL para generar config.js (ver abajo)
 scripts/verify.py          Verificación simple, sin dependencias
 README.md
 ```
+
+## Autoadministración: generador de enlaces (`generar.html`)
+
+"¿Cómo hago una campaña con otro número sin tocar código?" → **Abriendo `generar.html`** (enlazado al pie del sitio):
+
+1. Completás el número, el mensaje y —opcional— el vencimiento.
+2. Copiás el enlace generado, p. ej.
+   `https://USUARIO.github.io/casino/?phone=595981234567&msg=Sorpresa%20de%20noviembre&expires=2026-12-31T23%3A59%3A00-03%3A00`
+3. Ese enlace va directo a tus anuncios. Cada visitante ve el botón apuntando a ese número, con ese mensaje y ese vencimiento.
+
+No hace falta hacer commit ni push para cada campaña nueva: **la URL es la campaña**.
+También lista botones rápidos para copiar enlaces `?ref=codigo` de las campañas ya fijas en `config.js`.
+
+La página es pública (como todo el sitio) y solo arma enlaces: no guarda nada, no tiene panel ni acceso a datos. El número de campaña es visible en la URL — es un dato público por naturaleza.
+
+⚠️ Los enlaces generados apuntan a `index.html` y funcionan solo cuando el sitio está publicado en GitHub Pages (o probándola con un servidor local).
 
 ## Inicio rápido
 
@@ -48,9 +65,12 @@ en lugar del botón de WhatsApp. No se genera ningún enlace inválido.
 | `?ref=otro` | Código desconocido → usa `defaultPhone` |
 | `?phone=595981234567` | Usa ese número directamente (validado: 8–15 dígitos) |
 | `?phone=abc` | Teléfono inválido → usa `defaultPhone` (o el aviso si tampoco está configurado) |
-| sin parámetros | Usa `defaultPhone` |
+| `?msg=Texto%20aquí` | Pisa el mensaje de `config.js` (máx. 300 caracteres, se sanea) |
+| `?expires=2026-12-31T23:59:59-03:00` | Activa el contador hasta ese instante (Pisa `expiresAt` de `config.js`) |
+| `?ref=x&phone=595...&msg=...` | Combinable: el número directo gana; `ref` queda para analítica |
+| sin parámetros | Usa `config.js` tal cual |
 
-Los parámetros se tratan como **entrada no confiable**: se normalizan, validan y sanean antes de usarse.
+Los parámetros se tratan como **entrada no confiable**: se normalizan, validan y sanean antes de usarse. Lo genera/valida `generar.html` si no querés armar URLs a mano.
 
 ## Contador y urgencia
 
@@ -86,6 +106,15 @@ Página pública (cualquiera puede abrirla) que genera el contenido de `config.j
    `?ref=...`, el contador (o su ausencia) y la versión móvil.
 4. Tras publicar, poné esa URL en `config.js → siteUrl` y hacé push de nuevo: habilita `canonical` y `og:url`.
 5. Rutas siempre **relativas** (`assets/...`, `config.js`): nunca `/assets/...`, que rompería bajo `/REPOSITORIO/`.
+6. Compartí `.../generar.html` solo con quien gestione las campañas. No guarda nada ni requiere login (no hay backend),
+   pero evita difundirla masivamente: cada persona que la use puede armar enlaces con cualquier número.
+
+## Verificación
+
+`python3 scripts/verify.py` controla: archivos requeridos, que los recursos referenciados existan,
+que no haya rutas absolutas, que `config.js` parsee y tenga formato válido, que no queden restos del
+panel antiguo ni teléfonos fijos inventados, y que no se registren números en consola.
+Advertencias (datos PENDIENTES del propietario) no frenan el resultado.
 
 ## Seguridad y privacidad
 
@@ -102,16 +131,9 @@ Página pública (cualquiera puede abrirla) que genera el contenido de `config.j
 - Sin frameworks, sin imágenes pesadas, fuentes con `display=swap` y alternativas del sistema
   (`Inter` → `system-ui`; `Fraunces` → `Georgia`): la página se ve bien aunque Google Fonts no responda.
 
-## Verificación
-
-`python3 scripts/verify.py` controla: archivos requeridos, que los recursos referenciados existan,
-que no haya rutas absolutas, que `config.js` parsee y tenga formato válido, que no queden restos del
-panel antiguo ni teléfonos fijos inventados, y que no se registren números en consola.
-Advertencias (datos PENDIENTES del propietario) no frenan el resultado.
-
 ## Notas para el propietario (pendientes)
 
-- [ ] `defaultPhone` y (si aplica) `campaigns` en `config.js` — hoy vacíos por diseño.
+- [ ] `defaultPhone` y (si aplica) `campaigns` en `config.js`, o directamente no tocar nada y usar `generar.html` por campaña.
 - [ ] Decidir la vigencia real de la oferta y completar `expiresAt`, o dejarlo vacío.
 - [ ] `siteUrl` una vez publicado el sitio (habilita canonical y og:url).
 - [ ] Si querés imagen al compartir en redes, agregá una imagen **existente** y su `og:image` (hoy no se declara ninguna).

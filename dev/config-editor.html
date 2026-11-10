@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Editor local de config.js · HERRAMIENTA DE DESARROLLO (no segura)</title>
+<style>
+  :root { --bg:#0b0b0b; --panel:#141412; --gold:#f2c66d; --wa:#25D366; --text:#f5f3ee; --dim:rgba(245,243,238,.6); --line:rgba(245,243,238,.12); }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,sans-serif; padding:1.5rem 1rem 3rem; max-width:46rem; margin:0 auto; line-height:1.5; }
+  h1 { font-size:1.3rem; margin-bottom:.25rem; }
+  .warn { border:2px solid #d4a03f; background:rgba(212,160,63,.12); color:#ffe3a1; border-radius:.6rem; padding:.75rem .9rem; font-size:.85rem; line-height:1.55; margin:.9rem 0 1.4rem; }
+  .warn strong { color:#fff; }
+  label { display:block; font-size:.62rem; letter-spacing:.15em; text-transform:uppercase; color:var(--dim); font-weight:700; margin:1rem 0 .35rem; }
+  input, textarea, select { width:100%; background:#161613; border:1px solid var(--line); border-radius:.55rem; color:var(--text); padding:.6rem .7rem; font-size:.9rem; font-family:inherit; }
+  input:focus, textarea:focus { outline:none; border-color:var(--wa); box-shadow:0 0 0 3px rgba(37,211,102,.18); }
+  textarea { min-height:9rem; font-family:ui-monospace,Menlo,monospace; font-size:.78rem; }
+  .row { display:grid; grid-template-columns:1fr 1fr auto; gap:.5rem; margin-bottom:.45rem; }
+  .row input { min-width:0; }
+  button { background:var(--wa); color:#053b1e; border:none; border-radius:.55rem; padding:.6rem 1rem; font-weight:700; cursor:pointer; font-size:.85rem; }
+  button.ghost { background:transparent; border:1px solid var(--line); color:var(--dim); }
+  button.ghost:hover { color:var(--text); border-color:rgba(255,255,255,.3); }
+  button.small { padding:.5rem .7rem; }
+  .actions { display:flex; gap:.5rem; flex-wrap:wrap; margin-top:1rem; }
+  .fine { font-size:.72rem; color:var(--dim); margin-top:.8rem; }
+  code { background:rgba(0,0,0,.4); padding:.1em .35em; border-radius:.3em; }
+  .del { background:transparent; border:1px solid rgba(255,90,90,.35); color:#ff9c9c; padding:.5rem .7rem; }
+  .ok { color:#8bf0b4; }
+  #status { font-size:.8rem; margin-top:.6rem; min-height:1.2em; }
+</style>
+</head>
+<body>
+
+<h1>✏️ Editor local de configuración</h1>
+<p class="fine">Herramienta para generar el contenido de <code>config.js</code> desde este navegador.</p>
+
+<div class="warn" role="alert">
+  <strong>Esto NO es seguridad ni autenticación.</strong><br />
+  Es una página pública del sitio: cualquiera que la abra puede verla y usarla.
+  No ingreses datos privados. Todo lo publicado en <code>config.js</code> es visible para cualquier visitante.<br /><br />
+  <strong>Sus cambios NO se publican automáticamente.</strong> Para que la web cambie hay que
+  reemplazar <code>config.js</code> en el repositorio, hacer commit y push.
+</div>
+
+<label for="f-default">Número por defecto (fallback) — solo dígitos</label>
+<input id="f-default" inputmode="numeric" placeholder="595981234567" autocomplete="off" />
+
+<label for="f-message">Mensaje pre-cargado (máx. 300 caracteres)</label>
+<input id="f-message" type="text" autocomplete="off" />
+
+<label for="f-expires">Vencimiento ISO 8601 con huso (vacío = sin contador)</label>
+<input id="f-expires" type="text" placeholder="2026-12-31T23:59:59-03:00" autocomplete="off" />
+
+<label for="f-siteurl">URL pública del sitio (vacío = sin canonical/og:url)</label>
+<input id="f-siteurl" type="text" placeholder="https://USUARIO.github.io/casino/" autocomplete="off" />
+
+<div id="campaigns"></div>
+<button type="button" class="ghost" id="add-campaign">+ Agregar campaña</button>
+
+<div class="actions">
+  <button type="button" id="generate">Generar config.js</button>
+  <button type="button" class="ghost" id="copy">⧉ Copiar</button>
+  <button type="button" class="ghost" id="download">↓ Descargar config.js</button>
+</div>
+<p id="status" role="status" aria-live="polite"></p>
+
+<label for="output">Resultado (pegar en <code>config.js</code> del repositorio)</label>
+<textarea id="output" readonly spellcheck="false"></textarea>
+
+<p class="fine">
+  Cómo usar: editá los campos → <strong>Generar config.js</strong> → copiá o descargá →
+  reemplazá el archivo <code>config.js</code> → commit y push → GitHub Pages publica el cambio.<br />
+  Validación: teléfonos de 8–15 dígitos; códigos de campaña <code>^[a-z0-9_-]{2,30}$</code>.
+</p>
+
+<script src="../config.js"></script>
+<script>
+"use strict";
+(function () {
+  var RE_PHONE = /^\d{8,15}$/, RE_REF = /^[a-z0-9][a-z0-9_-]{1,29}$/;
+  var campaignsEl = document.getElementById("campaigns");
+  var output = document.getElementById("output");
+  var status = document.getElementById("status");
+  var initial = (window.SITE_CONFIG && typeof window.SITE_CONFIG === "object") ? window.SITE_CONFIG : {};
+
+  function note(msg, ok) { status.textContent = msg; status.className = ok ? "ok" : ""; }
+
+  function makeRow(code, phone) {
+    var row = document.createElement("div"); row.className = "row";
+    var c = document.createElement("input"); c.placeholder = "codigo (?ref=)"; c.value = code || ""; c.autocomplete = "off";
+    var p = document.createElement("input"); p.placeholder = "595..."; p.inputMode = "numeric"; p.value = phone || ""; p.autocomplete = "off";
+    var del = document.createElement("button"); del.type = "button"; del.className = "del"; del.textContent = "✕"; del.setAttribute("aria-label", "Eliminar campaña");
+    del.addEventListener("click", function () { row.remove(); });
+    row.append(c, p, del); campaignsEl.appendChild(row);
+  }
+
+  document.getElementById("add-campaign").addEventListener("click", function () { makeRow("", ""); });
+
+  document.getElementById("f-default").value = String(initial.defaultPhone || "");
+  document.getElementById("f-message").value = String(initial.message || "Hola, vengo de la campaña");
+  document.getElementById("f-expires").value = String(initial.expiresAt || "");
+  document.getElementById("f-siteurl").value = String(initial.siteUrl || "");
+  var initialCampaigns = (initial.campaigns && typeof initial.campaigns === "object") ? initial.campaigns : {};
+  Object.keys(initialCampaigns).forEach(function (k) { makeRow(k, initialCampaigns[k]); });
+  if (!Object.keys(initialCampaigns).length) makeRow("", "");
+
+  function buildConfig() {
+    var def = document.getElementById("f-default").value.replace(/\D/g, "");
+    if (def && !RE_PHONE.test(def)) throw new Error("Número por defecto inválido (8–15 dígitos).");
+    var msg = document.getElementById("f-message").value.replace(/[\u0000-\u001F\u007F]/g, " ").trim().slice(0, 300);
+    var exp = document.getElementById("f-expires").value.trim();
+    if (exp && (isNaN(Date.parse(exp)) || !/(Z|z|[+-]\d{2}:?\d{2})$/.test(exp))) throw new Error("Vencimiento inválido o sin huso horario (ej. 2026-12-31T23:59:59-03:00).");
+    var url = document.getElementById("f-siteurl").value.trim();
+    if (url && !/^https:\/\//.test(url)) throw new Error("siteUrl debe empezar con https://");
+    var campaigns = {};
+    Array.prototype.forEach.call(campaignsEl.querySelectorAll(".row"), function (row) {
+      var c = row.children[0].value.trim().toLowerCase();
+      var p = row.children[1].value.replace(/\D/g, "");
+      if (!c && !p) return;
+      if (!RE_REF.test(c)) throw new Error('Código de campaña inválido: "' + c + '"');
+      if (!RE_PHONE.test(p)) throw new Error('Número inválido para "' + c + '" (8–15 dígitos).');
+      campaigns[c] = p;
+    });
+    return "/* config.js — generado con dev/config-editor.html. PÚBLICO: no poner datos privados. */\n" +
+      "window.SITE_CONFIG = " + JSON.stringify({
+        defaultPhone: def,
+        campaigns: campaigns,
+        message: msg || "Hola, vengo de la campaña",
+        expiresAt: exp,
+        siteUrl: url,
+        displayPhone: "",
+        analytics: { enabled: !!(initial.analytics && initial.analytics.enabled) }
+      }, null, 2) + ";\n";
+  }
+
+  document.getElementById("generate").addEventListener("click", function () {
+    try { output.value = buildConfig(); note("config.js generado ✓", true); }
+    catch (e) { note(e.message, false); }
+  });
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+    return new Promise(function (resolve) {
+      var ta = document.createElement("textarea"); ta.value = text;
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e) { /* noop */ }
+      document.body.removeChild(ta); resolve();
+    });
+  }
+
+  document.getElementById("copy").addEventListener("click", function () {
+    if (!output.value) { try { output.value = buildConfig(); } catch (e) { note(e.message, false); return; } }
+    copyText(output.value).then(function () { note("Copiado al portapapeles ✓", true); });
+  });
+
+  document.getElementById("download").addEventListener("click", function () {
+    try { output.value = buildConfig(); } catch (e) { note(e.message, false); return; }
+    var blob = new Blob([output.value], { type: "application/javascript" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "config.js";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    note("config.js descargado ✓", true);
+  });
+})();
+</script>
+</body>
+</html>

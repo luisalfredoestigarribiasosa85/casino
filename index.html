@@ -3,1303 +3,159 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="description" content="Promoción especial: COMPRA y llevate 20% EXTRA. Escribinos por WhatsApp y aprovechá la oferta por tiempo limitado." />
+<meta name="description" content="Promoción especial: comprá y llevate 20% extra. Escribinos por WhatsApp para activar el beneficio." />
 <meta name="theme-color" content="#0b0b0b" />
-<title>COMPRA · 20% EXTRA | Oferta Especial</title>
+<title>Compra · 20% Extra | Promoción especial por WhatsApp</title>
 
-<!-- Open Graph / redes -->
-<meta property="og:title" content="COMPRA · 20% EXTRA" />
-<meta property="og:description" content="Llevate 20% EXTRA en tu compra. Escribinos por WhatsApp." />
+<!-- Open Graph / Twitter (sin og:image: no hay imagen real del sitio; agregar solo una existente) -->
+<meta property="og:title" content="Compra · 20% Extra" />
+<meta property="og:description" content="Llevate 20% extra en tu compra. Escribinos por WhatsApp y activamos el beneficio." />
 <meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Compra · 20% Extra" />
+<meta name="twitter:description" content="Escribinos por WhatsApp y activamos el beneficio de la promoción." />
+<!-- canonical y og:url se generan solo si config.js define siteUrl (ver assets/js/app.js) -->
 
 <!-- Favicon inline (emoji 🎁) -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎁</text></svg>" />
 
-<!-- Tipografías: Fraunces (display) + Inter (texto) -->
+<!-- Tipografías con display=swap; si Google Fonts no responde, se usan las del sistema -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-<style>
-/* ==========================================================
-   DESIGN TOKENS
-   ========================================================== */
-:root {
-  --bg:            #0b0b0b;
-  --bg-soft:       #111110;
-  --gold:          #f2c66d;
-  --gold-deep:     #d4a03f;
-  --gold-soft:     rgba(242, 198, 109, .14);
-  --wa:            #25D366;
-  --wa-deep:       #1fb855;
-  --wa-dark:       #053b1e;
-  --text:          #f5f3ee;
-  --text-dim:      rgba(245, 243, 238, .55);
-  --text-faint:    rgba(245, 243, 238, .32);
-  --line:          rgba(245, 243, 238, .10);
-  --radius-lg:     1.5rem;
-  --radius-md:     1rem;
-  --ease-spring:   cubic-bezier(.22, 1.4, .36, 1);
-  --ease-out:      cubic-bezier(.16, 1, .3, 1);
-}
-
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-html { height: 100%; }
-
-body {
-  min-height: 100svh;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-  position: relative;
-  isolation: isolate;
-}
-
-::selection { background: var(--gold); color: #0b0b0b; }
-
-:focus-visible {
-  outline: 2px solid var(--wa);
-  outline-offset: 4px;
-  border-radius: 4px;
-}
-
-/* ==========================================================
-   FONDO: gradientes radiales + grano
-   ========================================================== */
-.bg-fx { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-
-.bg-fx::before {
-  content: "";
-  position: absolute;
-  top: -22%; left: 50%;
-  transform: translateX(-50%);
-  width: 130vmax; height: 90vmax;
-  background: radial-gradient(ellipse at center, rgba(242,198,109,.16) 0%, rgba(242,198,109,.05) 32%, transparent 62%);
-}
-.bg-fx::after {
-  content: "";
-  position: absolute;
-  bottom: -30%; left: 50%;
-  transform: translateX(-50%);
-  width: 110vmax; height: 80vmax;
-  background: radial-gradient(ellipse at center, rgba(37,211,102,.13) 0%, rgba(37,211,102,.04) 35%, transparent 65%);
-}
-
-/* Orbes flotantes decorativos */
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: .5;
-  animation: orbFloat 11s ease-in-out infinite alternate;
-}
-.orb--gold  { width: 180px; height: 180px; top: 12%;  left: -70px;  background: radial-gradient(circle, rgba(242,198,109,.35), transparent 70%); }
-.orb--green { width: 220px; height: 220px; bottom: 18%; right: -80px; background: radial-gradient(circle, rgba(37,211,102,.30), transparent 70%); animation-delay: -5.5s; }
-
-@keyframes orbFloat {
-  from { transform: translateY(0) scale(1); }
-  to   { transform: translateY(-46px) scale(1.12); }
-}
-
-/* Grano de película (SVG feTurbulence) */
-.grain {
-  position: fixed; inset: -50%;
-  z-index: 50;
-  pointer-events: none;
-  opacity: .05;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: grainShift 7s steps(6) infinite;
-}
-@keyframes grainShift {
-  0%,100% { transform: translate(0,0); }
-  20% { transform: translate(-3%,2%); }
-  40% { transform: translate(3%,-2%); }
-  60% { transform: translate(-2%,-3%); }
-  80% { transform: translate(2%,3%); }
-}
-
-/* ==========================================================
-   LAYOUT PRINCIPAL
-   ========================================================== */
-.page {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: max(1.1rem, env(safe-area-inset-top)) 1.25rem max(1.1rem, env(safe-area-inset-bottom));
-  gap: clamp(.9rem, 2.6vh, 1.6rem);
-}
-
-/* ---------- Badge superior ---------- */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .42rem .95rem;
-  border: 1px solid var(--gold-deep);
-  border-radius: 999px;
-  background: var(--gold-soft);
-  color: var(--gold);
-  font-size: .68rem;
-  font-weight: 600;
-  letter-spacing: .22em;
-  text-transform: uppercase;
-  backdrop-filter: blur(6px);
-  animation: rise .7s var(--ease-out) both;
-}
-.badge .dot {
-  width: .45rem; height: .45rem;
-  border-radius: 50%;
-  background: var(--wa);
-  box-shadow: 0 0 0 0 rgba(37,211,102,.6);
-  animation: livePulse 2s ease-out infinite;
-}
-@keyframes livePulse {
-  0%   { box-shadow: 0 0 0 0 rgba(37,211,102,.55); }
-  70%  { box-shadow: 0 0 0 .55rem rgba(37,211,102,0); }
-  100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); }
-}
-
-/* ---------- Promoción principal ---------- */
-.promo { display: flex; flex-direction: column; align-items: center; gap: .35rem; }
-
-.promo__kicker {
-  font-size: clamp(.85rem, 3.4vw, 1.05rem);
-  font-weight: 600;
-  letter-spacing: .55em;
-  text-indent: .55em; /* equilibra el letter-spacing */
-  text-transform: uppercase;
-  color: var(--text-dim);
-  animation: rise .7s var(--ease-out) .12s both;
-}
-
-.promo__title {
-  font-family: 'Fraunces', serif;
-  font-weight: 900;
-  font-size: clamp(4.4rem, 22vw, 9.5rem);
-  line-height: .92;
-  letter-spacing: -0.03em;
-  background: linear-gradient(160deg, #fff6dd 0%, var(--gold) 28%, #b57716 52%, #ffe9a8 68%, var(--gold) 85%, #fff6dd 100%);
-  background-size: 220% 100%;
-  -webkit-background-clip: text;
-          background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  filter: drop-shadow(0 6px 34px rgba(242,198,109,.28));
-  animation: rise .8s var(--ease-out) .22s both, shimmer 5.5s ease-in-out 1.2s infinite;
-}
-@keyframes shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50%      { background-position: 100% 50%; }
-}
-.promo__title .extra {
-  display: block;
-  font-size: .38em;
-  font-weight: 600;
-  letter-spacing: .42em;
-  text-indent: .42em;
-  margin-top: .35em;
-  -webkit-text-fill-color: var(--text);
-  color: var(--text);
-  background: none;
-  filter: none;
-}
-
-.promo__sub {
-  max-width: 34ch;
-  font-size: clamp(.85rem, 3.6vw, 1rem);
-  line-height: 1.55;
-  color: var(--text-dim);
-  animation: rise .7s var(--ease-out) .34s both;
-}
-.promo__sub strong { color: var(--text); font-weight: 600; }
-
-/* ---------- Countdown ---------- */
-.countdown {
-  display: flex;
-  align-items: center;
-  gap: .55rem;
-  animation: rise .7s var(--ease-out) .44s both;
-}
-.countdown__label {
-  font-size: .62rem;
-  letter-spacing: .18em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  margin-right: .15rem;
-}
-.countdown__cell {
-  min-width: 3.1rem;
-  padding: .4rem .35rem .35rem;
-  background: var(--bg-soft);
-  border: 1px solid var(--line);
-  border-radius: .65rem;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 4px 14px rgba(0,0,0,.4);
-}
-.countdown__num {
-  display: block;
-  font-variant-numeric: tabular-nums;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--gold);
-  line-height: 1;
-}
-.countdown__unit {
-  display: block;
-  margin-top: .3rem;
-  font-size: .52rem;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-}
-.countdown__sep { font-size: 1.15rem; font-weight: 700; color: var(--text-faint); padding-bottom: .9rem; }
-
-/* ---------- CTA WhatsApp ---------- */
-.cta-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .7rem;
-  width: 100%;
-  animation: rise .7s var(--ease-out) .54s both;
-}
-
-.cta {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: .8rem;
-  width: min(100%, 26rem);
-  padding: 1.05rem 1.6rem;
-  border: none;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, #2ee673 0%, var(--wa) 45%, var(--wa-deep) 100%);
-  color: var(--wa-dark);
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(1.02rem, 4.6vw, 1.2rem);
-  font-weight: 700;
-  letter-spacing: .06em;
-  text-decoration: none;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.28) inset,
-    0 2px 0 rgba(255,255,255,.35) inset,
-    0 10px 34px rgba(37,211,102,.42),
-    0 2px 8px rgba(0,0,0,.5);
-  transition: transform .18s var(--ease-spring), box-shadow .18s var(--ease-out), filter .18s var(--ease-out);
-  overflow: hidden;
-}
-/* Aro de pulso detrás del botón */
-.cta::before {
-  content: "";
-  position: absolute; inset: 0;
-  border-radius: inherit;
-  animation: ctaPulse 2.6s ease-out infinite;
-  box-shadow: 0 0 0 0 rgba(37,211,102,.5);
-  pointer-events: none;
-}
-@keyframes ctaPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(37,211,102,.45); }
-  70%  { box-shadow: 0 0 0 1.4rem rgba(37,211,102,0); }
-  100% { box-shadow: 0 0 0 0 rgba(37,211,102,0); }
-}
-/* Destello que cruza el botón */
-.cta::after {
-  content: "";
-  position: absolute;
-  top: -20%; left: -80%;
-  width: 45%; height: 140%;
-  background: linear-gradient(100deg, transparent, rgba(255,255,255,.65), transparent);
-  transform: skewX(-22deg);
-  animation: ctaGlare 3.8s ease-in-out 1.4s infinite;
-  pointer-events: none;
-}
-@keyframes ctaGlare {
-  0%, 55% { left: -80%; }
-  85%, 100% { left: 135%; }
-}
-.cta:hover  { transform: translateY(-2px) scale(1.02); filter: brightness(1.06); box-shadow: 0 0 0 1px rgba(255,255,255,.3) inset, 0 2px 0 rgba(255,255,255,.4) inset, 0 14px 44px rgba(37,211,102,.52), 0 3px 10px rgba(0,0,0,.5); }
-.cta:active { transform: translateY(1px) scale(.98); }
-
-.cta svg { flex: 0 0 auto; width: 1.75em; height: 1.75em; filter: drop-shadow(0 1px 1px rgba(0,0,0,.25)); }
-
-.cta-note {
-  font-size: .72rem;
-  color: var(--text-faint);
-  display: flex;
-  align-items: center;
-  gap: .35rem;
-}
-.cta-note svg { width: .85rem; height: .85rem; stroke: var(--wa); }
-
-/* ---------- Ref detectado (debug-friendly, sutil) ---------- */
-.ref-tag {
-  font-size: .62rem;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--text-faint);
-  border: 1px dashed var(--line);
-  border-radius: .4rem;
-  padding: .28rem .55rem;
-  animation: rise .7s var(--ease-out) .62s both;
-}
-.ref-tag[hidden] { display: none; }
-
-/* ---------- Trust badges ---------- */
-.trust {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: .45rem;
-  animation: rise .7s var(--ease-out) .68s both;
-}
-.trust li {
-  list-style: none;
-  display: inline-flex;
-  align-items: center;
-  gap: .35rem;
-  font-size: .68rem;
-  color: var(--text-dim);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: .32rem .7rem;
-  background: rgba(255,255,255,.02);
-}
-.trust svg { width: .8rem; height: .8rem; stroke: var(--gold); }
-
-/* ==========================================================
-   ANIMACIÓN DE ENTRADA
-   ========================================================== */
-@keyframes rise {
-  from { opacity: 0; transform: translateY(26px); filter: blur(6px); }
-  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
-}
-
-/* ==========================================================
-   FOOTER
-   ========================================================== */
-.foot {
-  padding: .8rem 1rem calc(.8rem + env(safe-area-inset-bottom));
-  text-align: center;
-  font-size: .62rem;
-  color: var(--text-faint);
-  border-top: 1px solid var(--line);
-}
-
-/* ==========================================================
-   DESKTOP  ≥ 768px
-   ========================================================== */
-@media (min-width: 768px) {
-  .page { gap: 1.35rem; }
-  .cta { padding: 1.15rem 2rem; }
-  .orb--gold  { left: 6%; top: 18%; }
-  .orb--green { right: 6%; bottom: 22%; }
-}
-
-/* ==========================================================
-   REDUCED MOTION
-   ========================================================== */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: .001s !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .001s !important;
-  }
-}
-/* ==========================================================
-   PANEL DE ADMINISTRACIÓN
-   ========================================================== */
-.admin[hidden] { display: none; }
-.admin {
-  position: fixed; inset: 0;
-  z-index: 70;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: .9rem;
-}
-.admin__backdrop {
-  position: absolute; inset: 0;
-  background: rgba(4, 4, 4, .78);
-  backdrop-filter: blur(8px);
-  animation: fadeIn .25s var(--ease-out);
-}
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-.admin__panel {
-  position: relative;
-  width: min(100%, 34rem);
-  max-height: 92svh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  background: linear-gradient(180deg, #151513 0%, var(--bg-soft) 100%);
-  border: 1px solid rgba(242,198,109,.28);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 30px 80px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.04) inset;
-  padding: 1.25rem 1.25rem 1.4rem;
-  text-align: left;
-  animation: panelIn .35s var(--ease-spring);
-}
-@keyframes panelIn { from { opacity: 0; transform: translateY(28px) scale(.96); } to { opacity: 1; transform: none; } }
-
-.admin__head {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
-  border-bottom: 1px solid var(--line);
-  padding-bottom: .85rem;
-  margin-bottom: .9rem;
-}
-.admin__kicker {
-  font-size: .58rem; letter-spacing: .3em; text-transform: uppercase;
-  color: var(--gold); font-weight: 600; margin-bottom: .3rem;
-}
-.admin__title {
-  font-family: 'Fraunces', serif; font-weight: 600;
-  font-size: 1.25rem; letter-spacing: -.01em; color: var(--text);
-}
-.admin__close {
-  flex: 0 0 auto;
-  width: 2.1rem; height: 2.1rem;
-  display: grid; place-items: center;
-  background: rgba(255,255,255,.04);
-  border: 1px solid var(--line);
-  border-radius: .65rem;
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: color .15s, border-color .15s, transform .15s;
-}
-.admin__close:hover { color: var(--text); border-color: rgba(255,255,255,.25); transform: rotate(90deg); }
-.admin__close svg { width: 1rem; height: 1rem; }
-
-.admin__notice {
-  display: flex; gap: .55rem; align-items: flex-start;
-  font-size: .72rem; line-height: 1.5; color: var(--gold);
-  background: var(--gold-soft);
-  border: 1px solid rgba(242,198,109,.30);
-  border-left-width: 3px;
-  border-radius: .6rem;
-  padding: .6rem .7rem;
-  margin-bottom: .95rem;
-}
-.admin__notice code {
-  font-family: ui-monospace, monospace; font-size: .85em;
-  background: rgba(0,0,0,.35); border-radius: .3em; padding: .1em .35em;
-}
-
-.field { display: block; margin-bottom: .8rem; }
-.field__label {
-  display: block;
-  font-size: .62rem; letter-spacing: .16em; text-transform: uppercase;
-  color: var(--text-faint); font-weight: 600;
-  margin-bottom: .35rem;
-}
-.field input, .field select, .campaign-row input {
-  width: 100%;
-  background: #161613;
-  border: 1px solid var(--line);
-  border-radius: .6rem;
-  color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: .9rem;
-  padding: .62rem .7rem;
-  transition: border-color .15s, box-shadow .15s;
-}
-.field input:focus, .field select:focus, .campaign-row input:focus {
-  outline: none;
-  border-color: var(--wa);
-  box-shadow: 0 0 0 3px rgba(37,211,102,.18);
-}
-
-.campaigns__head {
-  display: grid;
-  grid-template-columns: minmax(0,1fr) minmax(0,1.15fr) 2.2rem;
-  gap: .5rem;
-  padding: 0 .2rem .35rem;
-  font-size: .58rem; letter-spacing: .16em; text-transform: uppercase;
-  color: var(--text-faint); font-weight: 600;
-}
-.campaigns__list { list-style: none; display: flex; flex-direction: column; gap: .45rem; margin-bottom: .6rem; }
-.campaign-row {
-  display: grid;
-  grid-template-columns: minmax(0,1fr) minmax(0,1.15fr) 2.2rem;
-  gap: .5rem; align-items: center;
-}
-.campaign-row input.input--error { border-color: #ff5a5a; box-shadow: 0 0 0 3px rgba(255,90,90,.15); }
-.campaign-row__del {
-  width: 2.2rem; height: 2.2rem;
-  display: grid; place-items: center;
-  background: rgba(255,90,90,.08);
-  border: 1px solid rgba(255,90,90,.25);
-  border-radius: .6rem;
-  color: #ff9c9c;
-  cursor: pointer;
-  transition: background .15s, transform .15s;
-}
-.campaign-row__del:hover { background: rgba(255,90,90,.18); transform: scale(1.08); }
-.campaign-row__del svg { width: 1rem; height: 1rem; }
-
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
-  font-family: 'Inter', sans-serif;
-  font-size: .78rem; font-weight: 600;
-  letter-spacing: .04em;
-  border-radius: .7rem;
-  padding: .68rem 1rem;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: transform .15s, filter .15s, background .15s, border-color .15s, color .15s;
-  white-space: nowrap;
-}
-.btn:active { transform: scale(.96); }
-.btn--primary {
-  background: linear-gradient(180deg, #2ee673, var(--wa) 55%, var(--wa-deep));
-  color: var(--wa-dark);
-  box-shadow: 0 6px 18px rgba(37,211,102,.35);
-}
-.btn--primary:hover { filter: brightness(1.08); }
-.btn--ghost {
-  background: rgba(255,255,255,.04);
-  border-color: var(--line);
-  color: var(--text-dim);
-}
-.btn--ghost:hover { color: var(--text); border-color: rgba(255,255,255,.22); }
-.btn--small { padding: .5rem .8rem; font-size: .72rem; }
-
-.admin__actions { display: flex; gap: .55rem; margin: .9rem 0; flex-wrap: wrap; }
-.admin__export { display: flex; gap: .45rem; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: .85rem; margin-bottom: .9rem; }
-
-.linkbuilder__row {
-  display: grid;
-  grid-template-columns: minmax(0,.9fr) minmax(0,1.6fr) auto;
-  gap: .45rem;
-  margin: .35rem 0 .35rem;
-}
-.linkbuilder__row input {
-  background: #101010;
-  border: 1px solid var(--line);
-  border-radius: .6rem;
-  color: var(--gold);
-  font-family: ui-monospace, monospace;
-  font-size: .72rem;
-  padding: .55rem .6rem;
-  min-width: 0;
-}
-.admin__fine { font-size: .62rem; color: var(--text-faint); line-height: 1.5; margin-top: .35rem; }
-.admin__fine code { font-family: ui-monospace, monospace; background: rgba(255,255,255,.05); padding: .05em .3em; border-radius: .3em; }
-
-.pinrow { display: flex; gap: .55rem; align-items: flex-end; border-top: 1px solid var(--line); padding-top: .85rem; }
-.pinrow .field { flex: 1; margin-bottom: 0; }
-
-/* Portón PIN */
-.admin__gate { text-align: center; padding: .5rem .25rem .25rem; }
-.admin__gate p { font-size: .8rem; color: var(--text-dim); margin-bottom: .65rem; }
-.admin__gate form { display: flex; gap: .5rem; max-width: 20rem; margin: 0 auto; }
-.admin__gate input {
-  flex: 1; min-width: 0;
-  background: #161613; border: 1px solid var(--line); border-radius: .6rem;
-  color: var(--text); padding: .65rem .75rem; font-size: .95rem;
-  letter-spacing: .2em; text-align: center;
-}
-.admin__gate input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
-
-/* Toast de confirmación */
-.toast {
-  position: absolute;
-  left: 50%; bottom: 1.1rem;
-  transform: translate(-50%, 12px);
-  background: #1d1d1a;
-  border: 1px solid rgba(37,211,102,.4);
-  color: #8bf0b4;
-  font-size: .75rem; font-weight: 600;
-  padding: .45rem .95rem;
-  border-radius: 999px;
-  opacity: 0; pointer-events: none;
-  transition: opacity .25s, transform .25s;
-  white-space: nowrap;
-  max-width: 90%;
-  overflow: hidden; text-overflow: ellipsis;
-}
-.toast--show { opacity: 1; transform: translate(-50%, 0); }
-.toast--error { border-color: rgba(255,90,90,.45); color: #ff9c9c; }
-
-@media (max-width: 560px) {
-  .admin { padding: 0; align-items: flex-end; }
-  .admin__panel {
-    width: 100%; max-height: 96svh;
-    border-radius: 1.1rem 1.1rem 0 0;
-    border-left: none; border-right: none; border-bottom: none;
-    padding: 1.1rem 1rem calc(1.2rem + env(safe-area-inset-bottom));
-  }
-  .campaigns__head { display: none; }
-  .campaign-row {
-    grid-template-columns: 1fr 2.2rem;
-    grid-template-areas: "code del" "phone del";
-    row-gap: .35rem;
-  }
-  .campaign-row input[data-field="code"]  { grid-area: code; }
-  .campaign-row input[data-field="phone"] { grid-area: phone; }
-  .campaign-row__del { grid-area: del; align-self: stretch; height: auto; }
-  .linkbuilder__row { grid-template-columns: 1fr; }
-  .linkbuilder__row select { order: -1; }
-}
-
-</style>
+<link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 
 <body>
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
 
-<!-- Capas de fondo decorativas -->
-<div class="bg-fx" aria-hidden="true">
-  <div class="orb orb--gold"></div>
-  <div class="orb orb--green"></div>
-</div>
-<div class="grain" aria-hidden="true"></div>
+<div class="bg-fx" aria-hidden="true"></div>
 
-<main class="page">
+<main id="contenido" class="page">
 
-  <!-- Badge de campaña activa -->
-  <span class="badge"><span class="dot"></span> Oferta por tiempo limitado</span>
+  <!-- ══════════ HERO / PROMOCIÓN ══════════ -->
+  <section class="hero" aria-labelledby="hero-title">
 
-  <!-- Encabezado promocional -->
-  <header class="promo">
-    <p class="promo__kicker">Compra</p>
-    <h1 class="promo__title">20%<span class="extra">Extra</span></h1>
-    <p class="promo__sub">Llevate <strong>20% extra</strong> en tu próxima compra.<br />Escribinos por WhatsApp y te activamos el beneficio al instante.</p>
-  </header>
+    <span class="badge" id="hero-badge"><span class="dot" aria-hidden="true"></span> Promoción especial</span>
 
-  <!-- Countdown hasta las 23:59 de hoy -->
-  <div class="countdown" role="timer" aria-label="Tiempo restante de la oferta">
-    <span class="countdown__label">Termina en</span>
-    <div class="countdown__cell"><span class="countdown__num" id="cd-h">00</span><span class="countdown__unit">hrs</span></div>
-    <span class="countdown__sep">:</span>
-    <div class="countdown__cell"><span class="countdown__num" id="cd-m">00</span><span class="countdown__unit">min</span></div>
-    <span class="countdown__sep">:</span>
-    <div class="countdown__cell"><span class="countdown__num" id="cd-s">00</span><span class="countdown__unit">seg</span></div>
-  </div>
+    <header class="promo">
+      <p class="promo__kicker">Compra</p>
+      <h1 class="promo__title" id="hero-title">20%<span class="extra">Extra</span></h1>
+      <p class="promo__sub">Llevate <strong>20% extra</strong> en tu próxima compra. Escribinos por WhatsApp y te contamos cómo activar el beneficio.</p>
+    </header>
 
-  <!-- CTA principal: WhatsApp -->
-  <div class="cta-wrap">
-    <a id="cta-whatsapp" class="cta" href="https://wa.me/595981234567?text=Hola%2C%20vengo%20de%20la%20campa%C3%B1a"
-       target="_blank" rel="noopener noreferrer" aria-label="Ir a WhatsApp y aprovechar la oferta">
-      <!-- Icono oficial de WhatsApp -->
-      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.718 2.006-1.41.248-.694.248-1.289.173-1.41-.074-.124-.272-.198-.57-.347m-5.421 4.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a8.19 8.19 0 01-1.26-4.827 8.203 8.203 0 018.224-8.207c2.196 0 4.258.858 5.815 2.414a8.187 8.187 0 012.408 5.822c-.006 4.527-3.687 8.203-8.231 8.203m7.103-18.31A10.137 10.137 0 0012.051 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.687 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-      </svg>
-      Ir a WhatsApp
-    </a>
+    <!-- Countdown: solo visible si config.js define expiresAt válido -->
+    <div class="countdown" id="countdown" role="timer" aria-label="Tiempo restante de la promoción" hidden>
+      <span class="countdown__label" id="countdown-label">Termina en</span>
+      <div class="countdown__cells" id="countdown-cells">
+        <div class="countdown__cell"><span class="countdown__num" id="cd-h">00</span><span class="countdown__unit">hrs</span></div>
+        <span class="countdown__sep" aria-hidden="true">:</span>
+        <div class="countdown__cell"><span class="countdown__num" id="cd-m">00</span><span class="countdown__unit">min</span></div>
+        <span class="countdown__sep" aria-hidden="true">:</span>
+        <div class="countdown__cell"><span class="countdown__num" id="cd-s">00</span><span class="countdown__unit">seg</span></div>
+      </div>
+      <p class="countdown__deadline" id="countdown-deadline"></p>
+      <p class="countdown__expired" id="countdown-expired" hidden>La promoción finalizó.</p>
+    </div>
 
-    <p class="cta-note">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-      Respuesta en minutos · Atención personalizada
-    </p>
+    <!-- Aviso cuando falta configurar el número (visible solo en ese caso) -->
+    <div class="config-error" id="config-error" role="alert" hidden>
+      <strong>Esta promoción aún no está disponible.</strong><br />
+      Falta completar la configuración del sitio. Si sos el administrador: editá <code>config.js</code> y recargá la página.
+    </div>
 
-    <!-- Muestra el ref/código activo (visible solo cuando la URL lo trae) -->
-    <span id="ref-tag" class="ref-tag" hidden></span>
-  </div>
+    <!-- CTA principal -->
+    <div class="cta-wrap" id="cta-wrap">
+      <a id="cta-whatsapp" class="cta" href="#" target="_blank" rel="noopener noreferrer"
+         aria-label="Abrir WhatsApp y consultar por la promoción">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.718 2.006-1.41.248-.694.248-1.289.173-1.41-.074-.124-.272-.198-.57-.347m-5.421 4.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a8.19 8.19 0 01-1.26-4.827 8.203 8.203 0 018.224-8.207c2.196 0 4.258.858 5.815 2.414a8.187 8.187 0 012.408 5.822c-.006 4.527-3.687 8.203-8.231 8.203m7.103-18.31A10.137 10.137 0 0012.051 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.687 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        Ir a WhatsApp
+      </a>
 
-  <!-- Señales de confianza -->
-  <ul class="trust" aria-label="Garantías">
-    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10z"/></svg>Compra segura</li>
-    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Atención 24/7</li>
-    <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Beneficio inmediato</li>
-  </ul>
+      <p class="cta-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+        Te atiende una persona, por chat, sin formularios
+      </p>
+
+      <!-- Alternativa si WhatsApp no abre -->
+      <div class="alt-contact" id="alt-contact">
+        <p>¿WhatsApp no se abre? Guardá el número y escribinos igual:</p>
+        <div class="alt-contact__row">
+          <a class="alt-contact__number" id="alt-number" href="#">+000000000000</a>
+          <button type="button" class="btn" id="copy-number">Copiar número</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ BENEFICIOS (solo información del proceso de contacto) ══════════ -->
+  <section class="section" aria-labelledby="beneficios-title">
+    <p class="section__kicker">Cómo funciona</p>
+    <h2 class="section__title" id="beneficios-title">Activar la promoción es simple</h2>
+    <ul class="benefits">
+      <li class="benefit">
+        <div class="benefit__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <h3>Escribís por chat</h3>
+        <p>Tocá el botón verde y se abre WhatsApp con un mensaje listo para enviar. No hace falta cuenta ni formulario.</p>
+      </li>
+      <li class="benefit">
+        <div class="benefit__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <h3>Te respondemos en persona</h3>
+        <p>La consulta la atiende una persona del equipo, no un bot. Te explicamos las condiciones y cómo aplicar el 20% extra.</p>
+      </li>
+      <li class="benefit">
+        <div class="benefit__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <h3>Activás el beneficio</h3>
+        <p>Una vez que confirmamos las condiciones de la promoción, coordinás tu compra con el beneficio incluido.</p>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ══════════ PREGUNTAS FRECUENTES ══════════ -->
+  <section class="section" aria-labelledby="faq-title">
+    <p class="section__kicker">Preguntas frecuentes</p>
+    <h2 class="section__title" id="faq-title">Antes de escribirnos</h2>
+    <div class="faq">
+      <details>
+        <summary>¿Cómo accedo al 20% extra?</summary>
+        <p>Escribinos por WhatsApp con el botón de esta página y te indicamos los pasos y las condiciones vigentes de la promoción.</p>
+      </details>
+      <details>
+        <summary>¿Necesito registrarme o dejar mis datos?</summary>
+        <p>No. La consulta es directamente por el chat de WhatsApp; no hay formularios ni registros en esta página.</p>
+      </details>
+      <details>
+        <summary>¿En qué productos aplica la promoción?</summary>
+        <p>Las condiciones exactas (qué incluye, topes o exclusiones) te las confirmamos por chat, porque dependen de la campaña vigente.</p>
+      </details>
+      <details>
+        <summary>¿Hasta cuándo está disponible?</summary>
+        <p>Si la promoción tiene fecha de vencimiento, vas a ver un contador en la parte superior de esta página. Si no lo ves, la vigencia se confirma por chat.</p>
+      </details>
+    </div>
+  </section>
 
 </main>
 
-<!-- ══════════════════════════════════════════════
-     PANEL DE ADMINISTRACIÓN  (se abre con ?admin=1)
-     ══════════════════════════════════════════════ -->
-<div id="admin-root" class="admin" hidden>
-  <div class="admin__backdrop" data-close-admin aria-hidden="true"></div>
-
-  <section class="admin__panel" role="dialog" aria-modal="true" aria-labelledby="admin-title">
-    <header class="admin__head">
-      <div>
-        <p class="admin__kicker">⚙ Panel de control</p>
-        <h2 class="admin__title" id="admin-title">Administración de campañas</h2>
-      </div>
-      <button type="button" class="admin__close" data-close-admin aria-label="Cerrar panel">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-      </button>
-    </header>
-
-    <!-- Portón de acceso (protección visual del lado del cliente) -->
-    <div class="admin__gate" id="admin-gate">
-      <p>Ingresá el PIN de administrador</p>
-      <form id="gate-form" autocomplete="off">
-        <input
-          type="password"
-          id="gate-pin"
-          placeholder="PIN"
-          aria-label="PIN de administrador"
-          autocomplete="off"
-          inputmode="text"
-          autocapitalize="off"
-          spellcheck="false"
-        />
-        <button type="submit" class="btn btn--primary btn--small">Entrar</button>
-      </form>
-      <p class="admin__fine" style="margin-top:.7rem">PIN por defecto: <code>*****</code> — cambialo adentro del panel.</p>
-    </div>
-
-    <!-- Cuerpo del panel -->
-    <div class="admin__body" id="admin-body" hidden>
-      <div class="admin__notice">
-        <span aria-hidden="true">ℹ️</span>
-        <span>Los cambios se guardan en <strong>este navegador</strong> (localStorage). Para publicarlos en tu hosting, usá <strong>Copiar config</strong> y pegala reemplazando <code>DEFAULT_CONFIG</code> en <code>index.html</code>, o descargá el respaldo JSON.</span>
-      </div>
-
-      <label class="field">
-        <span class="field__label">Número por defecto (fallback)</span>
-        <input id="f-default" inputmode="numeric" placeholder="595981234567" autocomplete="off" />
-      </label>
-
-      <label class="field">
-        <span class="field__label">Mensaje pre-cargado en WhatsApp</span>
-        <input id="f-message" type="text" autocomplete="off" />
-      </label>
-
-      <p class="field__label" style="margin-bottom:.35rem">Campañas (código <code style="text-transform:none">?ref=</code> → número)</p>
-      <div class="campaigns__head" aria-hidden="true"><span>Código</span><span>WhatsApp (internacional, sin +)</span><span></span></div>
-      <ul class="campaigns__list" id="campaign-rows"></ul>
-      <button type="button" id="add-campaign" class="btn btn--ghost btn--small">+ Agregar campaña</button>
-
-      <div class="admin__actions">
-        <button type="button" id="save-config" class="btn btn--primary">💾 Guardar cambios</button>
-        <button type="button" id="reset-config" class="btn btn--ghost">↺ Restablecer</button>
-      </div>
-
-      <div class="admin__export">
-        <button type="button" id="copy-config" class="btn btn--ghost btn--small">⧉ Copiar config (JS)</button>
-        <button type="button" id="download-config" class="btn btn--ghost btn--small">↓ Descargar JSON</button>
-        <label class="btn btn--ghost btn--small" for="import-file" style="cursor:pointer">↑ Importar JSON</label>
-        <input type="file" id="import-file" accept="application/json,.json" hidden />
-      </div>
-
-      <div class="linkbuilder">
-        <p class="field__label" style="margin-bottom:0">Generador de enlaces para tus anuncios</p>
-        <div class="linkbuilder__row">
-          <select id="lb-ref" aria-label="Elegí la campaña"></select>
-          <input id="lb-output" readonly aria-label="Enlace generado" />
-          <button type="button" id="lb-copy" class="btn btn--primary btn--small">Copiar</button>
-        </div>
-        <p class="admin__fine">También podés usar <code>?phone=595...</code> directo en la URL. El enlace siempre apunta a esta misma página.</p>
-      </div>
-
-      <form id="pin-form" class="pinrow" autocomplete="off">
-        <label class="field">
-          <span class="field__label">Cambiar PIN de acceso</span>
-          <input id="f-pin" type="password" placeholder="Nuevo PIN" autocomplete="new-password" />
-        </label>
-        <button type="submit" class="btn btn--ghost btn--small">Actualizar PIN</button>
-      </form>
-    </div>
-
-    <div class="toast" id="admin-toast" role="status" aria-live="polite"></div>
-  </section>
-</div>
-
 <footer class="foot">
-  Al hacer clic serás redirigido a WhatsApp · Promoción sujeta a disponibilidad y términos de la campaña
-  <span aria-hidden="true">&nbsp;·&nbsp;</span><a href="?admin=1" style="color:inherit;text-decoration:none;opacity:.6" title="Acceso administrador">Admin</a>
+  Promoción sujeta a disponibilidad y a las condiciones que te confirmamos por WhatsApp.<br />
+  Sitio estático: el código fuente y la configuración son públicos.
 </footer>
 
-<script>
-/* ==========================================================
-   CONFIGURACIÓN DE CAMPAÑAS (valores por defecto / fábrica)
-   ----------------------------------------------------------
-   👉 Estos son los valores que trae el archivo de fábrica.
-      Se pueden sobre-escribir desde el panel (?admin=1), que
-      guarda los cambios en localStorage de este navegador.
+<!-- Aviso tipo toast compartido -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-   Formato del número: internacional SIN "+" ni espacios.
-   Para publicar cambios en producción: panel → «Copiar config (JS)»
-   y pegarlo reemplazando este bloque DEFAULT_CONFIG.
-   ========================================================== */
-var DEFAULT_CONFIG = {
-  "defaultPhone": "595981234567",
-  "refs": {
-    "casino": "595981111111",
-    "ropa": "595982222222",
-    "tienda": "595983333333",
-    "mayorista": "595984444444"
-  },
-  "message": "Hola, vengo de la campaña"
-};
+<noscript>
+  <div style="position:fixed;left:1rem;right:1rem;bottom:1rem;z-index:90;background:#1d1d1a;border:1px solid #f2c66d;color:#f5f3ee;padding:.8rem 1rem;border-radius:.7rem;font-family:system-ui,sans-serif;font-size:.85rem;line-height:1.5">
+    Esta página necesita JavaScript para armar el enlace de WhatsApp.<br />
+    Si no podés activarlo, volvé cuando puedas o contactá al negocio por sus canales habituales.
+  </div>
+</noscript>
 
-var LS_CONFIG = 'wa_campaign_config_v1';   // override del admin (localStorage)
-var LS_PIN    = 'wa_admin_pin';            // PIN del panel
-var DEFAULT_PIN = 'admin';
-
-/* ---------- Validadores reutilizables ---------- */
-function isValidPhone(p) { return /^\d{8,15}$/.test(String(p || '').trim()); }
-function isValidRef(c)   { return /^[a-z0-9_-]{2,30}$/.test(String(c || '').trim().toLowerCase()); }
-
-/* ---------- Carga efectiva: localStorage (admin) > DEFAULT_CONFIG ---------- */
-function cloneConfig(c) {
-  return { defaultPhone: c.defaultPhone, refs: Object.assign({}, c.refs), message: c.message };
-}
-
-function sanitizeRefs(input) {
-  var clean = {};
-  if (!input || typeof input !== 'object') return clean;
-  for (var k in input) {
-    if (!Object.prototype.hasOwnProperty.call(input, k)) continue;
-    var code  = String(k).trim().toLowerCase();
-    var phone = String(input[k] || '').trim();
-    if (isValidRef(code) && isValidPhone(phone)) clean[code] = phone;
-  }
-  return clean;
-}
-
-function loadConfig() {
-  try {
-    var raw = localStorage.getItem(LS_CONFIG);
-    if (!raw) return { config: cloneConfig(DEFAULT_CONFIG), override: false };
-    var s   = JSON.parse(raw);
-    var cfg = cloneConfig(DEFAULT_CONFIG);
-    if (isValidPhone(s.defaultPhone))              cfg.defaultPhone = String(s.defaultPhone).trim();
-    var refs = sanitizeRefs(s.refs);
-    cfg.refs = refs; // un override válido reemplaza el mapa completo
-    if (typeof s.message === 'string' && s.message.trim()) cfg.message = s.message;
-    return { config: cfg, override: true };
-  } catch (e) {
-    console.warn('[campaña] Config guardada ilegible, usando DEFAULT_CONFIG.', e);
-    return { config: cloneConfig(DEFAULT_CONFIG), override: false };
-  }
-}
-
-var loadedConfig = loadConfig();
-var CONFIG       = loadedConfig.config;
-var USING_LOCAL_OVERRIDE = loadedConfig.override;
-
-/* ==========================================================
-   RESOLUCIÓN DINÁMICA DEL NÚMERO SEGÚN LA URL
-   ----------------------------------------------------------
-   Soporta:
-     ?phone=595981111111   → usa ese número directo
-     ?ref=casino           → busca "casino" en CONFIG.refs
-   Prioridad: phone válido > ref conocido > defaultPhone
-   ========================================================== */
-function resolveCampaign() {
-  var params    = new URLSearchParams(window.location.search);
-  var phoneRaw  = (params.get('phone') || '').trim();
-  var refRaw    = (params.get('ref')   || '').trim().toLowerCase();
-
-  var phone      = CONFIG.defaultPhone;
-  var source     = 'default';
-  var refTagText = '';
-
-  // 1) Opción directa por teléfono (sanitizada: solo dígitos, 8–15 caracteres)
-  var phoneClean = phoneRaw.replace(/\D/g, '');
-  if (isValidPhone(phoneClean)) {
-    phone  = phoneClean;
-    source = 'phone';
-    refTagText = 'Campaña: directo · ' + phone;
-  }
-  // 2) Opción por código de referencia/campaña
-  else if (refRaw && Object.prototype.hasOwnProperty.call(CONFIG.refs, refRaw)) {
-    phone  = CONFIG.refs[refRaw];
-    source = 'ref';
-    refTagText = 'Campaña: ' + refRaw.toUpperCase();
-  }
-  // 3) Fallback: número por defecto
-  else {
-    phone  = CONFIG.defaultPhone;
-    source = 'default';
-    if (refRaw) {
-      // ref desconocido: se loguea pero se usa el fallback silenciosamente
-      console.warn('[campaña] ref "' + refRaw + '" no está mapeado en CONFIG.refs. Usando número por defecto.');
-    }
-  }
-
-  // Actualizar el href del botón con el formato oficial de wa.me
-  var cta = document.getElementById('cta-whatsapp');
-  if (cta) {
-    cta.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(CONFIG.message);
-    cta.setAttribute('aria-label', 'Ir a WhatsApp y aprovechar la oferta (campaña: ' + source + ')');
-    // Tracking opcional para analítica (sin backend)
-    cta.dataset.campaignSource = source;
-    cta.dataset.campaignRef    = refRaw || '';
-  }
-
-  // Mostrar la etiqueta de campaña si la URL trajo un parámetro reconocible
-  var tag = document.getElementById('ref-tag');
-  if (tag) {
-    if (refTagText) { tag.textContent = refTagText; tag.hidden = false; }
-    else            { tag.hidden = true; }
-  }
-
-  // Trazabilidad en consola para QA de campañas
-  console.info('[campaña] fuente=' + source + ' | número=' + phone + (refRaw ? ' | ref=' + refRaw : '') + (USING_LOCAL_OVERRIDE ? ' | config=localStorage' : ' | config=archivo'));
-  return phone;
-}
-resolveCampaign();
-
-/* ==========================================================
-   PANEL DE ADMINISTRACIÓN
-   ----------------------------------------------------------
-   Se abre con ?admin=1 (o con el enlace "Admin" del footer).
-   • PIN por defecto: "admin" (cambiable dentro del panel).
-     Es protección visual del lado del cliente, NO seguridad real.
-   • Los cambios se guardan en localStorage (este navegador) y
-     sobre-escriben DEFAULT_CONFIG al cargar la página.
-   • Para publicarlos en producción: «Copiar config (JS)» y pegar
-     en index.html, o «Descargar JSON» como respaldo.
-   ========================================================== */
-(function adminModule() {
-  var root = document.getElementById('admin-root');
-  if (!root) return;
-
-  var gate     = document.getElementById('admin-gate');
-  var body     = document.getElementById('admin-body');
-  var toastEl  = document.getElementById('admin-toast');
-  var rowsEl   = document.getElementById('campaign-rows');
-  var fDefault = document.getElementById('f-default');
-  var fMessage = document.getElementById('f-message');
-  var lbRef    = document.getElementById('lb-ref');
-  var lbOutput = document.getElementById('lb-output');
-
-  var unlocked   = false;
-  var toastTimer = null;
-
-  /* ---------- Utilidades ---------- */
-  function toast(msg, isError) {
-    toastEl.textContent = msg;
-    toastEl.classList.toggle('toast--error', !!isError);
-    toastEl.classList.add('toast--show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toastEl.classList.remove('toast--show'); }, 2800);
-  }
-
-  function fallbackCopy(text) {
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); } catch (e) { /* noop */ }
-    document.body.removeChild(ta);
-  }
-
-  function copyText(text, okMsg) {
-    var done = function () { toast(okMsg || 'Copiado al portapapeles ✓'); };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
-    } else {
-      fallbackCopy(text);
-      done();
-    }
-  }
-
-  function baseUrl() {
-    return window.location.href.split('?')[0].split('#')[0];
-  }
-
-  /* ---------- Filas de campañas ---------- */
-  function makeRow(code, phone) {
-    var li = document.createElement('li');
-    li.className = 'campaign-row';
-
-    var codeInput = document.createElement('input');
-    codeInput.dataset.field = 'code';
-    codeInput.placeholder   = 'ej. casino';
-    codeInput.value         = code || '';
-    codeInput.autocomplete  = 'off';
-    codeInput.spellcheck    = false;
-    codeInput.setAttribute('aria-label', 'Código de campaña (parámetro ref)');
-
-    var phoneInput = document.createElement('input');
-    phoneInput.dataset.field = 'phone';
-    phoneInput.inputMode     = 'numeric';
-    phoneInput.placeholder   = '595981234567';
-    phoneInput.value         = phone || '';
-    phoneInput.autocomplete  = 'off';
-    phoneInput.setAttribute('aria-label', 'Número de WhatsApp (internacional, sin +)');
-
-    var del = document.createElement('button');
-    del.type      = 'button';
-    del.className = 'campaign-row__del';
-    del.setAttribute('aria-label', 'Eliminar campaña');
-    del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-9 0 1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/></svg>';
-    del.addEventListener('click', function () { li.remove(); refreshLinkBuilder(); });
-
-    [codeInput, phoneInput].forEach(function (inp) {
-      inp.addEventListener('input', function () { inp.classList.remove('input--error'); });
-    });
-
-    li.appendChild(codeInput);
-    li.appendChild(phoneInput);
-    li.appendChild(del);
-    return li;
-  }
-
-  function addRow(code, phone) {
-    rowsEl.appendChild(makeRow(code, phone));
-    refreshLinkBuilder();
-  }
-
-  function renderRows(map) {
-    rowsEl.innerHTML = '';
-    var keys = Object.keys(map || {});
-    if (!keys.length) { addRow('', ''); return; }
-    keys.forEach(function (k) { rowsEl.appendChild(makeRow(k, map[k])); });
-    refreshLinkBuilder();
-  }
-
-  function currentRefsFromDOM() {
-    var out = [];
-    rowsEl.querySelectorAll('.campaign-row').forEach(function (row) {
-      var code  = row.querySelector('[data-field="code"]').value.trim().toLowerCase();
-      var phone = row.querySelector('[data-field="phone"]').value.replace(/\D/g, '');
-      if (code || phone) out.push({ code: code, phone: phone });
-    });
-    return out;
-  }
-
-  function fillForm() {
-    fDefault.value = CONFIG.defaultPhone;
-    fMessage.value = CONFIG.message;
-    fDefault.classList.remove('input--error');
-    renderRows(CONFIG.refs);
-  }
-
-  /* ---------- Generador de enlaces ---------- */
-  function refreshLinkBuilder() {
-    if (!lbRef) return;
-    var prev     = lbRef.value;
-    var refs     = currentRefsFromDOM().filter(function (r) { return isValidRef(r.code) && isValidPhone(r.phone); });
-    var base     = baseUrl();
-
-    lbRef.innerHTML = '';
-    var optDefault = document.createElement('option');
-    optDefault.value = ''; optDefault.textContent = '— Página sin parámetro —';
-    lbRef.appendChild(optDefault);
-    refs.forEach(function (r) {
-      var o = document.createElement('option');
-      o.value = r.code; o.textContent = '?ref=' + r.code;
-      lbRef.appendChild(o);
-    });
-
-    var stillExists = refs.some(function (r) { return r.code === prev; });
-    lbRef.value = stillExists || prev === '' ? prev : (refs.length ? refs[0].code : '');
-    lbOutput.value = lbRef.value ? base + '?ref=' + encodeURIComponent(lbRef.value) : base;
-  }
-
-  /* ---------- Validación ---------- */
-  function validateForm() {
-    var ok = true;
-    rowsEl.querySelectorAll('.campaign-row').forEach(function (row) {
-      var c = row.querySelector('[data-field="code"]');
-      var p = row.querySelector('[data-field="phone"]');
-      var rowEmpty = !c.value.trim() && !p.value.trim();
-      var cOk = rowEmpty || isValidRef(c.value);
-      var pOk = rowEmpty || isValidPhone(p.value);
-      c.classList.toggle('input--error', !cOk);
-      p.classList.toggle('input--error', !pOk);
-      if (!cOk || !pOk) ok = false;
-    });
-    var dOk = isValidPhone(fDefault.value);
-    fDefault.classList.toggle('input--error', !dOk);
-    if (!dOk) ok = false;
-    return ok;
-  }
-
-  function persistConfig(cfg, silent) {
-    try {
-      localStorage.setItem(LS_CONFIG, JSON.stringify(cfg));
-    } catch (e) {
-      toast('No se pudo guardar (localStorage lleno o bloqueado)', true);
-      return false;
-    }
-    var re = loadConfig();
-    CONFIG = re.config;
-    USING_LOCAL_OVERRIDE = re.override;
-    resolveCampaign();
-    if (!silent) toast('Cambios guardados en este navegador ✓');
-    refreshLinkBuilder();
-    return true;
-  }
-
-  function buildConfigFromForm() {
-    var refs = {};
-    currentRefsFromDOM().forEach(function (r) {
-      if (isValidRef(r.code) && isValidPhone(r.phone)) refs[r.code] = r.phone;
-    });
-    return {
-      defaultPhone: fDefault.value.replace(/\D/g, ''),
-      refs: refs,
-      message: fMessage.value.trim() || DEFAULT_CONFIG.message
-    };
-  }
-
-  /* ---------- Eventos ---------- */
-  document.getElementById('add-campaign').addEventListener('click', function () { addRow('', ''); });
-  rowsEl.addEventListener('input', refreshLinkBuilder);
-  lbRef.addEventListener('change', refreshLinkBuilder);
-
-  document.getElementById('save-config').addEventListener('click', function () {
-    if (!validateForm()) { toast('Revisá los campos marcados en rojo', true); return; }
-    persistConfig(buildConfigFromForm(), false);
-  });
-
-  document.getElementById('reset-config').addEventListener('click', function () {
-    try { localStorage.removeItem(LS_CONFIG); } catch (e) { /* noop */ }
-    var re = loadConfig();
-    CONFIG = re.config;
-    USING_LOCAL_OVERRIDE = false;
-    fillForm();
-    resolveCampaign();
-    toast('Configuración restablecida a los valores del archivo');
-  });
-
-  document.getElementById('copy-config').addEventListener('click', function () {
-    var cfg = buildConfigFromForm();
-    var js  = 'var DEFAULT_CONFIG = ' + JSON.stringify(cfg, null, 2) + ';';
-    copyText(js, 'Config JS copiada — pegala en index.html ✓');
-  });
-
-  document.getElementById('download-config').addEventListener('click', function () {
-    var cfg  = buildConfigFromForm();
-    var blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
-    var url  = URL.createObjectURL(blob);
-    var a    = document.createElement('a');
-    a.href     = url;
-    a.download = 'campanas-whatsapp.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast('respaldo JSON descargado ✓');
-  });
-
-  document.getElementById('import-file').addEventListener('change', function (ev) {
-    var file = ev.target.files && ev.target.files[0];
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function () {
-      try {
-        var s = JSON.parse(String(reader.result || '{}'));
-        var cfg = {
-          defaultPhone: isValidPhone(s.defaultPhone) ? String(s.defaultPhone).replace(/\D/g, '') : DEFAULT_CONFIG.defaultPhone,
-          refs: sanitizeRefs(s.refs),
-          message: (typeof s.message === 'string' && s.message.trim()) ? s.message : DEFAULT_CONFIG.message
-        };
-        if (persistConfig(cfg, true)) {
-          fillForm();
-          toast('Config importada y aplicada ✓');
-        }
-      } catch (e) {
-        toast('El archivo no es un JSON válido de campaña', true);
-      }
-      ev.target.value = '';
-    };
-    reader.readAsText(file);
-  });
-
-  document.getElementById('lb-copy').addEventListener('click', function () {
-    if (lbOutput.value) copyText(lbOutput.value, 'Enlace copiado ✓');
-  });
-
-  /* ---------- PIN ---------- */
-  function getPin() {
-    try { return localStorage.getItem(LS_PIN) || DEFAULT_PIN; } catch (e) { return DEFAULT_PIN; }
-  }
-
-  document.getElementById('gate-form').addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    var input = document.getElementById('gate-pin');
-    if (input.value === getPin()) {
-      unlocked     = true;
-      gate.hidden  = true;
-      body.hidden  = false;
-      input.value  = '';
-      fillForm();
-    } else {
-      toast('PIN incorrecto', true);
-      input.value = '';
-      input.focus();
-    }
-  });
-
-  document.getElementById('pin-form').addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    var input  = document.getElementById('f-pin');
-    var newPin = input.value.trim();
-    if (newPin.length < 3) { toast('El PIN debe tener al menos 3 caracteres', true); return; }
-    try { localStorage.setItem(LS_PIN, newPin); } catch (e) { toast('No se pudo guardar el PIN', true); return; }
-    input.value = '';
-    toast('PIN actualizado ✓');
-  });
-
-  /* ---------- Abrir / cerrar ---------- */
-  function openPanel() {
-    root.hidden = false;
-    document.body.style.overflow = 'hidden';
-    if (unlocked) {
-      gate.hidden = true;
-      body.hidden = false;
-      fillForm();
-    } else {
-      gate.hidden = false;
-      body.hidden = true;
-      var gp = document.getElementById('gate-pin');
-      gp.value = '';
-      setTimeout(function () { gp.focus(); }, 80);
-    }
-  }
-
-  function closePanel() {
-    root.hidden = true;
-    document.body.style.overflow = '';
-  }
-
-  root.querySelectorAll('[data-close-admin]').forEach(function (el) {
-    el.addEventListener('click', closePanel);
-  });
-
-  document.addEventListener('keydown', function (ev) {
-    if (ev.key === 'Escape' && !root.hidden) closePanel();
-  });
-
-  // Abrir automáticamente si la URL trae ?admin=1
-  if (new URLSearchParams(window.location.search).get('admin') === '1') {
-    openPanel();
-  }
-})();
-
-/* ==========================================================
-   COUNTDOWN hasta la medianoche local (00:00)
-   ========================================================== */
-(function startCountdown() {
-  var elH = document.getElementById('cd-h');
-  var elM = document.getElementById('cd-m');
-  var elS = document.getElementById('cd-s');
-  if (!elH || !elM || !elS) return;
-
-  var pad = function (n) { return String(n).padStart(2, '0'); };
-
-  function tick() {
-    var now  = new Date();
-    var end  = new Date(now);
-    end.setHours(23, 59, 59, 999);
-
-    var diff = Math.max(0, end - now);
-    elH.textContent = pad(Math.floor(diff / 3600000));
-    elM.textContent = pad(Math.floor((diff % 3600000) / 60000));
-    elS.textContent = pad(Math.floor((diff % 60000) / 1000));
-  }
-
-  tick();
-  setInterval(tick, 1000);
-})();
-</script>
+<script src="config.js"></script>
+<script src="assets/js/app.js" defer></script>
 </body>
 </html>

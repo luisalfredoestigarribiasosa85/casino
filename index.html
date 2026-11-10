@@ -734,7 +734,16 @@ body {
     <div class="admin__gate" id="admin-gate">
       <p>Ingresá el PIN de administrador</p>
       <form id="gate-form" autocomplete="off">
-        <input type="password" id="gate-pin" inputmode="text" placeholder="PIN" aria-label="PIN de administrador" autocomplete="off" />
+        <input
+          type="password"
+          id="gate-pin"
+          placeholder="PIN"
+          aria-label="PIN de administrador"
+          autocomplete="off"
+          inputmode="text"
+          autocapitalize="off"
+          spellcheck="false"
+        />
         <button type="submit" class="btn btn--primary btn--small">Entrar</button>
       </form>
       <p class="admin__fine" style="margin-top:.7rem">PIN por defecto: <code>*****</code> — cambialo adentro del panel.</p>

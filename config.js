@@ -13,7 +13,7 @@
    ========================================================================== */
 /* config.js — generado con dev/config-editor.html. PÚBLICO: no poner datos privados. */
 window.SITE_CONFIG = {
-  "defaultPhone": "595983835222",
+  "defaultPhone": "595975957150",
   "campaigns": {
     "casino": "595985666333"
   },

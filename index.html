@@ -174,5 +174,17 @@ src="https://www.facebook.com/tr?id=1817980576149404&ev=PageView&noscript=1"
 
 <script src="config.js"></script>
 <script src="assets/js/app.js" defer></script>
+<!-- Meta Pixel: evento Contact para WhatsApp -->
+<script>
+document.addEventListener('click', function(event) {
+  const button = event.target.closest('#cta-whatsapp');
+
+  if (!button) return;
+
+  if (typeof window.fbq === 'function') {
+    window.fbq('track', 'Contact');
+  }
+}, true);
+</script>
 </body>
 </html>

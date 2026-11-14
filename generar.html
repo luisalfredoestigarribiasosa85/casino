@@ -31,6 +31,19 @@
   .chip:hover { border-color: var(--gold-deep); color: var(--gold); }
   .back { display: inline-block; margin-top: 1.5rem; font-size: .78rem; color: var(--text-dim); }
   .back:hover { color: var(--text); }
+  .pin-gate { padding: max(2rem, 12vh) 1.25rem 3rem; }
+  .pin-gate[hidden] { display: none; }
+  .gen[hidden] { display: none !important; }
+  .pin-card { max-width: 26rem; margin: 0 auto; background: var(--bg-soft); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 1.6rem 1.4rem; display: grid; gap: .8rem; text-align: left; }
+  .pin-lock { font-size: 2.2rem; line-height: 1; }
+  .pin-card h1 { font-family: var(--font-display); font-weight: 900; font-size: 1.6rem; letter-spacing: -.02em; }
+  .pin-lead { color: var(--text-dim); font-size: .88rem; line-height: 1.55; }
+  .pin-card input[type="password"] { width: 100%; background: #161613; border: 1px solid var(--line); border-radius: .55rem; color: var(--text); padding: .7rem .75rem; font-size: 1rem; font-family: inherit; letter-spacing: .2em; }
+  .pin-card input[type="password"]:focus { outline: none; border-color: var(--wa); box-shadow: 0 0 0 3px rgba(37,211,102,.18); }
+  .pin-card input[disabled] { opacity: .5; }
+  .pin-remember { display: flex; align-items: center; gap: .5rem; font-size: .8rem; color: var(--text-dim); cursor: pointer; user-select: none; }
+  .pin-submit { width: 100%; padding: .75rem 1rem; font-size: .95rem; }
+  .pin-foot { display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; margin-top: 1.5rem; }
   .toast { bottom: 1.2rem; }
 </style>
 </head>
@@ -38,12 +51,42 @@
 <body>
 <div class="bg-fx" aria-hidden="true"></div>
 
-<main class="gen">
+<!-- ==========================================================================
+     GATE POR PIN (sin backend, sin datos guardados en servidor).
+     Barrera liviana para que el generador lo use solo el propietario.
+     IMPORTANTE: es un sitio estático y público — cualquiera puede leer el
+     código fuente y saltarla. Protege contra el uso casual, NO es seguridad
+     real. Nunca pongas acá un PIN que uses en otro sitio.
+     Cambiar el PIN:  printf '%s' 'TU_NUEVO_PIN' | sha256sum
+     y reemplazá PIN_HASH en el script al final del archivo.
+     ========================================================================== -->
+<section class="pin-gate" id="pin-gate" aria-labelledby="pin-title">
+  <div class="pin-card" role="group" aria-labelledby="pin-title">
+    <div class="pin-lock" aria-hidden="true">🔒</div>
+    <h1 id="pin-title">Acceso del propietario</h1>
+    <p class="pin-lead">Esta sección es exclusiva del propietario. Ingresá el PIN para usar el generador de campañas.</p>
+
+    <label class="field__label" for="pin-input">PIN de acceso</label>
+    <input type="password" id="pin-input" inputmode="numeric" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="pin-error" aria-label="PIN de acceso" />
+    <p class="field-err" id="pin-error" role="alert"></p>
+
+    <label class="pin-remember" for="pin-remember">
+      <input type="checkbox" id="pin-remember" />
+      <span>Recordar en este dispositivo</span>
+    </label>
+
+    <button type="button" class="btn btn-primary pin-submit" id="pin-submit">Entrar al generador</button>
+    <noscript><p class="field-err">Esta sección necesita JavaScript para verificar el PIN.</p></noscript>
+    <a class="back" href="index.html">← Volver a la página principal</a>
+  </div>
+</section>
+
+<main class="gen" id="gen-main" hidden>
   <h1>Generador de campañas</h1>
   <p class="gen__lead">Armá el enlace de WhatsApp para cada anuncio <strong>sin tocar el código</strong>. El enlace mismo lleva el número, el mensaje y el vencimiento.</p>
 
   <div class="warn" role="note">
-    Esta página es pública. El número de WhatsApp de la campaña será visible en la URL (igual que en <code>config.js</code>): no uses datos privados. Cada enlace generado funciona solo en tu hosting/GitHub Pages publicado.
+    Acceso exclusivo del propietario mediante PIN. El PIN es una barrera liviana: el código fuente de esta página es público (sitio estático, sin backend). No uses datos privados. Cada enlace generado funciona solo en tu hosting/GitHub Pages publicado, y el número de WhatsApp elegido será visible en la URL (igual que en <code>config.js</code>).
   </div>
 
   <form class="card" id="gen-form" novalidate>
@@ -85,10 +128,164 @@
     <p class="hint">Cargando…</p>
   </div>
 
-  <a class="back" href="index.html">← Volver a la página principal</a>
+  <div class="pin-foot">
+    <a class="back" href="index.html" style="margin-top: 0">← Volver a la página principal</a>
+    <button type="button" class="btn" id="lock-again">🔒 Bloquear de nuevo</button>
+  </div>
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+(function () {
+  /* ==========================================================================
+     GATE POR PIN — sin backend ni base de datos.
+     Sólo se guarda el hash SHA-256 del PIN, nunca el PIN en texto plano.
+     Limitación honesta: es un sitio estático; cualquiera puede leer el código,
+     saltarse esta barrera o romper el hash por fuerza bruta offline. Sirve
+     para que un visitante casual no use el generador — nada más.
+     Para cambiar el PIN: printf '%s' 'TU_NUEVO_PIN' | sha256sum
+     y reemplazá PIN_HASH. El PIN por defecto lo definió el propietario.
+     ========================================================================== */
+  var PIN_HASH = "f8f758bd69446638559d7de286b117a31a059bd2577c4b030a3af1783a9a32ce";
+  var STORAGE_KEY = "generar-unlocked";
+  var MAX_ATTEMPTS = 5;
+  var LOCK_SECONDS = 30;
+
+  var gate      = document.getElementById("pin-gate");
+  var main      = document.getElementById("gen-main");
+  var input     = document.getElementById("pin-input");
+  var error     = document.getElementById("pin-error");
+  var submitBtn = document.getElementById("pin-submit");
+  var remember  = document.getElementById("pin-remember");
+  var lockAgain = document.getElementById("lock-again");
+
+  var subtle = (window.crypto && (window.crypto.subtle || window.crypto.webkitSubtle)) || null;
+  var attempts = 0;
+  var lockedUntil = 0;
+  var countdownTimer = null;
+
+  function storageGet() {
+    try {
+      return window.sessionStorage.getItem(STORAGE_KEY) === "1" ||
+             window.localStorage.getItem(STORAGE_KEY) === "1";
+    } catch (e) { return false; }
+  }
+  function storageSet(rememberDevice) {
+    try {
+      window.sessionStorage.setItem(STORAGE_KEY, "1");
+      if (rememberDevice) window.localStorage.setItem(STORAGE_KEY, "1");
+    } catch (e) { /* modo privado: simplemente no persiste */ }
+  }
+  function storageClear() {
+    try {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch (e) { /* noop */ }
+  }
+
+  function showMain(focusHeading) {
+    gate.hidden = true;
+    main.hidden = false;
+    if (focusHeading) {
+      var h1 = main.querySelector("h1");
+      if (h1) { h1.setAttribute("tabindex", "-1"); h1.focus(); }
+    }
+  }
+  function showGate() {
+    main.hidden = true;
+    gate.hidden = false;
+    input.disabled = false;
+    remember.disabled = false;
+    submitBtn.disabled = false;
+    error.textContent = "";
+    input.focus();
+  }
+
+  function sha256Hex(text) {
+    var data = new TextEncoder().encode(text);
+    return subtle.digest("SHA-256", data).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) {
+        return b.toString(16).padStart(2, "0");
+      }).join("");
+    });
+  }
+
+  function startCountdown() {
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(function () {
+      var remain = Math.ceil((lockedUntil - Date.now()) / 1000);
+      if (remain <= 0) {
+        clearInterval(countdownTimer);
+        error.textContent = "";
+        input.disabled = false;
+        remember.disabled = false;
+        submitBtn.disabled = false;
+        input.focus();
+        return;
+      }
+      error.textContent = "Demasiados intentos. Esperá " + remain + " s para probar de nuevo.";
+    }, 250);
+  }
+
+  function tryUnlock() {
+    if (Date.now() < lockedUntil) return;
+    if (!subtle) {
+      error.textContent = "Este navegador no permite verificar el PIN en este modo (falta Web Crypto). Abrí la página desde http://localhost o desde el sitio publicado.";
+      return;
+    }
+    var pin = input.value.trim();
+    if (!pin) { error.textContent = "Ingresá el PIN."; input.focus(); return; }
+
+    submitBtn.disabled = true;
+    error.textContent = "";
+    sha256Hex(pin).then(function (hex) {
+      if (hex === PIN_HASH) {
+        storageSet(remember.checked);
+        input.value = "";
+        showMain(true);
+        return;
+      }
+      attempts += 1;
+      input.value = "";
+      if (attempts >= MAX_ATTEMPTS) {
+        attempts = 0;
+        lockedUntil = Date.now() + LOCK_SECONDS * 1000;
+        input.disabled = true;
+        remember.disabled = true;
+        submitBtn.disabled = true;
+        startCountdown();
+      } else {
+        submitBtn.disabled = false;
+        error.textContent = "PIN incorrecto. Te quedan " + (MAX_ATTEMPTS - attempts) + " intento(s).";
+        input.focus();
+      }
+    }, function () {
+      submitBtn.disabled = false;
+      error.textContent = "No se pudo verificar el PIN. Probá de nuevo.";
+    });
+  }
+
+  submitBtn.addEventListener("click", tryUnlock);
+  input.addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter") { ev.preventDefault(); tryUnlock(); }
+  });
+
+  lockAgain.addEventListener("click", function () {
+    storageClear();
+    attempts = 0;
+    lockedUntil = 0;
+    clearInterval(countdownTimer);
+    input.value = "";
+    remember.checked = false;
+    showGate();
+  });
+
+  // Al abrir: si ya estaba desbloqueado en esta pestaña/dispositivo, entrar directo.
+  if (storageGet()) { showMain(false); } else { showGate(); }
+})();
+</script>
 
 <script src="config.js"></script>
 <script>
